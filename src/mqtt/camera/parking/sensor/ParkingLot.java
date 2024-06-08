@@ -2,9 +2,10 @@ package mqtt.camera.parking.sensor;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class ParkingLot {
+public class ParkingLot implements Serializable {
     public ArrayList<PixelPlace> pixelPlaces;
     public String name;
     private boolean isFree = false;

@@ -15,7 +15,7 @@ public class ParkingLotsFile {
             System.out.println("Directory \"" + directoryName + "\" already exists.");
     }
 
-    public static void saveParkingLots(ObservableList<ParkingLot> wordRouting)
+    public static void saveParkingLots(ObservableList<ParkingLot> parkingLots)
     {
         try
         {
@@ -24,8 +24,8 @@ public class ParkingLotsFile {
             file.createNewFile();
             FileOutputStream f = new FileOutputStream(file);
             ObjectOutputStream o = new ObjectOutputStream(f);
-            for(int i=0; i<wordRouting.size(); i++)
-                o.writeObject(wordRouting.get(i));
+            for(int i=0; i<parkingLots.size(); i++)
+                o.writeObject(parkingLots.get(i));
             o.close();
             f.close();
         }catch (Exception e)
@@ -36,7 +36,7 @@ public class ParkingLotsFile {
 
     public static ObservableList<ParkingLot> loadParkingLots()
     {
-        ObservableList<ParkingLot> wordRouting = FXCollections.observableArrayList();
+        ObservableList<ParkingLot> parkingLots = FXCollections.observableArrayList();
         try
         {
             String fileSeparator = System.getProperty("file.separator");
@@ -52,7 +52,7 @@ public class ParkingLotsFile {
                     break;
                 }
                 if(object != null)
-                    wordRouting.add((ParkingLot) object);
+                    parkingLots.add((ParkingLot) object);
             }
 
             oi.close();
@@ -61,6 +61,6 @@ public class ParkingLotsFile {
         {
             System.out.println("Failed to read the \"parkingLots.dat\" file.");
         }
-        return wordRouting;
+        return parkingLots;
     }
 }

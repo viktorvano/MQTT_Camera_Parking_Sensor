@@ -1,6 +1,8 @@
 package mqtt.camera.parking.sensor;
 
-public class PixelPlace {
+import java.io.Serializable;
+
+public class PixelPlace implements Serializable {
     public int x;
     public int y;
     public PixelPlace(int x, int y)
