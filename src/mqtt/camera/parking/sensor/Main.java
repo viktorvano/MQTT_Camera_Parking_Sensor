@@ -29,6 +29,8 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
+import static mqtt.camera.parking.sensor.ParkingLotsFile.*;
+
 public class Main extends Application implements WebcamListener {
     private static final String version = "v20240608";
     private Webcam webcam;
@@ -39,6 +41,7 @@ public class Main extends Application implements WebcamListener {
     private final ObservableList<PixelPlace> parkingLotPixels = FXCollections.observableArrayList();
     private final Button buttonClearPixelList = new Button();
     private final Button buttonAddParkingLot = new Button();
+    private final Button buttonRemoveLot = new Button();
     private final TextField textFieldLotName = new TextField();
     private final ObservableList<ParkingLot> parkingLots = FXCollections.observableArrayList();
 
@@ -49,6 +52,9 @@ public class Main extends Application implements WebcamListener {
 
     @Override
     public void start(Stage primaryStage) {
+        createDirectoryIfNotExist("res");
+        parkingLots.setAll(loadParkingLots());
+
         List<Webcam> webcams = Webcam.getWebcams();
         ComboBox<Webcam> comboBox = new ComboBox<>();
         comboBox.getItems().addAll(webcams);
@@ -141,11 +147,24 @@ public class Main extends Application implements WebcamListener {
             }
 
             parkingLots.add(new ParkingLot(parkingLotName, pixelPlaces));
+            saveParkingLots(parkingLots);
 
             textFieldLotName.setText("");
             parkingLotPixels.clear();
         });
         buttonAddParkingLot.setDisable(true);
+
+        buttonRemoveLot.setText("Remove\nParking\nLot");
+        buttonRemoveLot.setLayoutX(580);
+        buttonRemoveLot.setLayoutY(580);
+        buttonRemoveLot.setOnAction(event -> {
+            int index = listViewParkingLots.getSelectionModel().getSelectedIndex();
+            if(index != -1)
+            {
+                parkingLots.remove(index);
+                saveParkingLots(parkingLots);
+            }
+        });
 
         textFieldLotName.setLayoutX(170);
         textFieldLotName.setLayoutY(580);
@@ -163,6 +182,7 @@ public class Main extends Application implements WebcamListener {
         pane.getChildren().add(listViewLotPixels);
         pane.getChildren().add(buttonClearPixelList);
         pane.getChildren().add(buttonAddParkingLot);
+        pane.getChildren().add(buttonRemoveLot);
         pane.getChildren().add(textFieldLotName);
         pane.getChildren().add(listViewParkingLots);
         Scene scene = new Scene(pane);
