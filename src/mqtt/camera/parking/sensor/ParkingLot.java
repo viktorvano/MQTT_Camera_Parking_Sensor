@@ -23,7 +23,7 @@ public class ParkingLot {
         }
 
         stringBuilder.deleteCharAt(stringBuilder.length()-1);
-        stringBuilder.deleteCharAt(stringBuilder.length()-1);//TODO: remove last two chars from string
+        stringBuilder.deleteCharAt(stringBuilder.length()-1);
 
         return stringBuilder.toString();
     }
