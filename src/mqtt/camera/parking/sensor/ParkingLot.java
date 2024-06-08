@@ -53,14 +53,13 @@ public class ParkingLot {
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Parking Lot " + this.name + " contains these pixels: ");
-        for(PixelPlace pixelPlace : pixelPlaces)
+        if(isFree)
         {
-            stringBuilder.append("[" + pixelPlace.x + ", " + pixelPlace.y + "], ");
+            stringBuilder.append(this.name + " is FREE.");
+        }else
+        {
+            stringBuilder.append(this.name + " is OCCUPIED.");
         }
-
-        stringBuilder.deleteCharAt(stringBuilder.length()-1);
-        stringBuilder.deleteCharAt(stringBuilder.length()-1);
 
         return stringBuilder.toString();
     }

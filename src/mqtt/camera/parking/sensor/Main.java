@@ -171,7 +171,17 @@ public class Main extends Application implements WebcamListener {
         primaryStage.setTitle("MQTT Camera Parking Sensor - " + version);
         primaryStage.show();
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(100), event -> {
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(5000), event -> {
+            parkingCount = 0;
+            for(ParkingLot parkingLot : parkingLots)
+            {
+                parkingLot.calculateIfParkingLotIsFree(bufferedImage, 40);
+                if(parkingLot.isFree())
+                {
+                    parkingCount++;
+                }
+            }
+
             labelParkingCount.setText("Parking count: " + parkingCount);
         }));
         timeline.setCycleCount(Timeline.INDEFINITE);
