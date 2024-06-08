@@ -35,7 +35,10 @@ public class ParkingLot {
             // if any of these colors are off the tolerance range the parking lot if not free
             if(red > max || red < min
             || green > max || green < min
-            || blue > max || blue < min)
+            || blue > max || blue < min
+            || red < tolerance
+            || green < tolerance
+            || blue < tolerance)
             {
                 free = false;
                 break;
@@ -47,13 +50,13 @@ public class ParkingLot {
 
     public boolean isFree()
     {
-        return isFree;
+        return this.isFree;
     }
 
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        if(isFree)
+        if(this.isFree)
         {
             stringBuilder.append(this.name + " is FREE.");
         }else
