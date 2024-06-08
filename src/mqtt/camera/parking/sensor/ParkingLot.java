@@ -1,25 +1,70 @@
 package mqtt.camera.parking.sensor;
 
-public class ParkingLot {
-    public int x;
-    public int y;
-    public int red;
-    public int green;
-    public int blue;
-    public boolean isFree = false;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.Serializable;
+import java.util.ArrayList;
 
-    public ParkingLot(int x, int y, int red, int green, int blue)
+public class ParkingLot implements Serializable {
+    public ArrayList<PixelPlace> pixelPlaces;
+    public String name;
+    private boolean isFree = false;
+
+    public ParkingLot(String name, ArrayList<PixelPlace> pixelPlaces)
     {
-        this.x = x;
-        this.y = y;
-        this.red = red;
-        this.green = green;
-        this.blue = blue;
+        this.name = name;
+        this.pixelPlaces = pixelPlaces;
+    }
+
+    public void calculateIfParkingLotIsFree(BufferedImage bufferedImage, int tolerance)
+    {
+        boolean free = true;
+        int averageColor;
+        Color c;
+        int red, green, blue;
+        for(PixelPlace place : pixelPlaces)
+        {
+            // verify if all the pixels are grey within the tolerance
+            c = new Color(bufferedImage.getRGB(place.x, place.y));
+            red = c.getRed();
+            green = c.getGreen();
+            blue = c.getBlue();
+            averageColor = (red + green + blue) / 3;
+            int min = averageColor - tolerance;
+            int max = averageColor + tolerance;
+
+            // if any of these colors are off the tolerance range the parking lot if not free
+            if(red > max || red < min
+            || green > max || green < min
+            || blue > max || blue < min
+            || red < tolerance// or of any point is too dark
+            || green < tolerance
+            || blue < tolerance)
+            {
+                free = false;
+                break;
+            }
+        }
+
+        this.isFree = free;
+    }
+
+    public boolean isFree()
+    {
+        return this.isFree;
     }
 
     @Override
     public String toString() {
-        return "X: " + x + ", Y: " + y +
-                ", Red: " + red + ", Green: " + green + ", Blue: " + blue;
+        StringBuilder stringBuilder = new StringBuilder();
+        if(this.isFree)
+        {
+            stringBuilder.append(this.name + " is FREE.");
+        }else
+        {
+            stringBuilder.append(this.name + " is OCCUPIED.");
+        }
+
+        return stringBuilder.toString();
     }
 }
