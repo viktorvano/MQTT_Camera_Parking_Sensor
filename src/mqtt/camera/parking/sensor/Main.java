@@ -183,6 +183,7 @@ public class Main extends Application implements WebcamListener {
             }
 
             labelParkingCount.setText("Parking count: " + parkingCount);
+            listViewParkingLots.refresh();
         }));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();

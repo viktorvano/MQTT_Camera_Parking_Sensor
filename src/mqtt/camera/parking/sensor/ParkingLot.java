@@ -36,7 +36,7 @@ public class ParkingLot {
             if(red > max || red < min
             || green > max || green < min
             || blue > max || blue < min
-            || red < tolerance
+            || red < tolerance// or of any point is too dark
             || green < tolerance
             || blue < tolerance)
             {
