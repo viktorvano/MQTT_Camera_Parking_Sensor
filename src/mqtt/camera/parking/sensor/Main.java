@@ -23,16 +23,18 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.control.Label;
+import org.eclipse.paho.client.mqttv3.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
+import static mqtt.camera.parking.sensor.AppParameters.*;
 import static mqtt.camera.parking.sensor.ParkingLotsFile.*;
+import static mqtt.camera.parking.sensor.StringFile.*;
 
 public class Main extends Application implements WebcamListener {
-    private static final String version = "v20240608";
     private Webcam webcam;
     private BufferedImage bufferedImage;
     private Image image;
@@ -44,6 +46,9 @@ public class Main extends Application implements WebcamListener {
     private final Button buttonRemoveLot = new Button();
     private final TextField textFieldLotName = new TextField();
     private final ObservableList<ParkingLot> parkingLots = FXCollections.observableArrayList();
+    private int lastParkingCount = -1;
+    private Label labelParkingCount;
+    private ListView<ParkingLot> listViewParkingLots;
 
     public static void main(String[] args)
     {
@@ -54,6 +59,12 @@ public class Main extends Application implements WebcamListener {
     public void start(Stage primaryStage) {
         createDirectoryIfNotExist("res");
         parkingLots.setAll(loadParkingLots());
+
+        brokerAddress = loadStringFromFile("res" + fileSeparator + "mqtt_broker_address.txt", brokerAddress);
+        clientId = loadStringFromFile("res" + fileSeparator + "mqtt_client_id.txt", clientId);
+        topic = loadStringFromFile("res" + fileSeparator + "mqtt_topic.txt", topic);
+        username = loadStringFromFile("res" + fileSeparator + "mqtt_username.txt", username);
+        password = loadStringFromFile("res" + fileSeparator + "mqtt_password.txt", password);
 
         List<Webcam> webcams = Webcam.getWebcams();
         ComboBox<Webcam> comboBox = new ComboBox<>();
@@ -106,7 +117,7 @@ public class Main extends Application implements WebcamListener {
         });
 
 
-        Label labelParkingCount = new Label("Parking count: " + parkingCount);
+        labelParkingCount = new Label("Parking count: " + parkingCount);
         labelParkingCount.setLayoutX(420);
         labelParkingCount.setLayoutY(500);
         labelParkingCount.setFont(Font.font("Arial", 20));
@@ -116,7 +127,7 @@ public class Main extends Application implements WebcamListener {
         listViewLotPixels.setLayoutY(550);
         listViewLotPixels.setPrefSize(150, 130);
 
-        ListView<ParkingLot> listViewParkingLots = new ListView<>(parkingLots);
+        listViewParkingLots = new ListView<>(parkingLots);
         listViewParkingLots.setLayoutX(420);
         listViewParkingLots.setLayoutY(550);
         listViewParkingLots.setPrefSize(150, 130);
@@ -192,6 +203,16 @@ public class Main extends Application implements WebcamListener {
         primaryStage.show();
 
         Timeline timeline = new Timeline(new KeyFrame(Duration.millis(5000), event -> {
+            checkParkingLots();
+        }));
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+    }
+
+    private void checkParkingLots()
+    {
+        if(bufferedImage != null)
+        {
             parkingCount = 0;
             for(ParkingLot parkingLot : parkingLots)
             {
@@ -204,9 +225,64 @@ public class Main extends Application implements WebcamListener {
 
             labelParkingCount.setText("Parking count: " + parkingCount);
             listViewParkingLots.refresh();
-        }));
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
+
+            if(parkingCount != lastParkingCount)
+            {
+                publishMQTT();
+                lastParkingCount = parkingCount;
+            }
+        }
+    }
+
+    private void publishMQTT()
+    {
+        int value = parkingCount;
+        int qos = 2;
+
+        try {
+            MqttClient sampleClient = new MqttClient(brokerAddress, clientId);
+            sampleClient.setCallback(new MqttCallback() {
+                @Override
+                public void connectionLost(Throwable cause) {
+                    System.out.println("Connection lost: " + cause.getMessage());
+                }
+
+                @Override
+                public void messageArrived(String topic, MqttMessage message) {
+                    System.out.println("Message arrived. Topic: " + topic + " Message: " + new String(message.getPayload()));
+                }
+
+                @Override
+                public void deliveryComplete(IMqttDeliveryToken token) {
+                    System.out.println("Delivery complete: " + token.getMessageId());
+                }
+            });
+
+            MqttConnectOptions connOpts = new MqttConnectOptions();
+            connOpts.setCleanSession(true);
+            connOpts.setUserName(username);
+            connOpts.setPassword(password.toCharArray());
+
+            System.out.println("Connecting to broker: " + brokerAddress);
+            sampleClient.connect(connOpts);
+            System.out.println("Connected");
+
+            String content = Integer.toString(value); // Convert the integer value to string
+            MqttMessage message = new MqttMessage(content.getBytes());
+            message.setQos(qos);
+            sampleClient.publish(topic, message);
+            System.out.println("Message published");
+
+            sampleClient.disconnect();
+            System.out.println("Disconnected");
+        } catch (MqttException me) {
+            System.out.println("Reason: " + me.getReasonCode());
+            System.out.println("Message: " + me.getMessage());
+            System.out.println("Localized: " + me.getLocalizedMessage());
+            System.out.println("Cause: " + me.getCause());
+            System.out.println("Exception: " + me);
+            me.printStackTrace();
+        }
     }
 
     private void toggleButtonAddParkingLot()
