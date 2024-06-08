@@ -35,6 +35,9 @@ public class StringFile {
             content = new StringBuilder(defaultValue);
             saveStringToFile(filename, defaultValue);
         }
+
+        content.deleteCharAt(content.length()-1);// remove the last \n
+
         return content.toString();
     }
 }
