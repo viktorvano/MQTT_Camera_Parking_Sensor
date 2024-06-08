@@ -8,11 +8,14 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
@@ -23,16 +26,21 @@ import javafx.scene.control.Label;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main extends Application implements WebcamListener {
-    private static final String version = "v20240606";
+    private static final String version = "v20240608";
     private Webcam webcam;
     private BufferedImage bufferedImage;
     private Image image;
     private ImageView imageView;
     private int parkingCount = 0;
-    private ObservableList<ParkingLot> parkingLotList = FXCollections.observableArrayList();
+    private final ObservableList<PixelPlace> parkingLotPixels = FXCollections.observableArrayList();
+    private final Button buttonClearPixelList = new Button();
+    private final Button buttonAddParkingLot = new Button();
+    private final TextField textFieldLotName = new TextField();
+    private final ObservableList<ParkingLot> parkingLots = FXCollections.observableArrayList();
 
     public static void main(String[] args)
     {
@@ -81,8 +89,8 @@ public class Main extends Application implements WebcamListener {
                 if (pixelX < bufferedImage.getWidth() && pixelY < bufferedImage.getHeight()) {
                     int rgb = bufferedImage.getRGB(pixelX, pixelY);
                     Color color = new Color(rgb);
-                    ParkingLot parkingLot = new ParkingLot(pixelX, pixelY, color.getRed(), color.getGreen(), color.getBlue());
-                    parkingLotList.add(parkingLot);
+                    PixelPlace pixelPlace = new PixelPlace(pixelX, pixelY);
+                    parkingLotPixels.add(pixelPlace);
                     System.out.println("X: " + pixelX + ", Y: " + pixelY +
                             ", Red: " + color.getRed() +
                             ", Green: " + color.getGreen() +
@@ -97,10 +105,54 @@ public class Main extends Application implements WebcamListener {
         labelParkingCount.setLayoutY(500);
         labelParkingCount.setFont(Font.font("Arial", 20));
 
-        ListView<ParkingLot> listView = new ListView<>(parkingLotList);
-        listView.setLayoutX(10);
-        listView.setLayoutY(550);
-        listView.setPrefSize(630, 100);
+        ListView<PixelPlace> listViewLotPixels = new ListView<>(parkingLotPixels);
+        listViewLotPixels.setLayoutX(10);
+        listViewLotPixels.setLayoutY(550);
+        listViewLotPixels.setPrefSize(150, 130);
+
+        ListView<ParkingLot> listViewParkingLots = new ListView<>(parkingLots);
+        listViewParkingLots.setLayoutX(420);
+        listViewParkingLots.setLayoutY(550);
+        listViewParkingLots.setPrefSize(150, 130);
+
+        // Listen for changes in the list to update the button's disabled state
+        parkingLotPixels.addListener((ListChangeListener<PixelPlace>) change -> {
+            buttonClearPixelList.setDisable(parkingLotPixels.isEmpty());
+            toggleButtonAddParkingLot();
+        });
+
+        buttonClearPixelList.setText("Clear Pixel List");
+        buttonClearPixelList.setLayoutX(170);
+        buttonClearPixelList.setLayoutY(550);
+        buttonClearPixelList.setOnAction(event -> {
+            parkingLotPixels.clear();
+        });
+        buttonClearPixelList.setDisable(true);
+
+        buttonAddParkingLot.setText("Add Parking Lot =>");
+        buttonAddParkingLot.setLayoutX(280);
+        buttonAddParkingLot.setLayoutY(580);
+        buttonAddParkingLot.setOnAction(event -> {
+            String parkingLotName = textFieldLotName.getText();
+            ArrayList<PixelPlace> pixelPlaces = new ArrayList<>();
+            for(PixelPlace place : parkingLotPixels)
+            {
+                pixelPlaces.add(new PixelPlace(place.x, place.y));
+            }
+
+            parkingLots.add(new ParkingLot(parkingLotName, pixelPlaces));
+
+            textFieldLotName.setText("");
+            parkingLotPixels.clear();
+        });
+        buttonAddParkingLot.setDisable(true);
+
+        textFieldLotName.setLayoutX(170);
+        textFieldLotName.setLayoutY(580);
+        textFieldLotName.setPrefWidth(80);
+        textFieldLotName.textProperty().addListener(event -> {
+            toggleButtonAddParkingLot();
+        });
 
         Pane pane = new Pane();
         pane.setPrefSize(650, 700);
@@ -108,7 +160,11 @@ public class Main extends Application implements WebcamListener {
         pane.getChildren().add(imageView);
         pane.getChildren().add(labelParkingCount);
         pane.getChildren().add(comboBox);
-        pane.getChildren().add(listView);
+        pane.getChildren().add(listViewLotPixels);
+        pane.getChildren().add(buttonClearPixelList);
+        pane.getChildren().add(buttonAddParkingLot);
+        pane.getChildren().add(textFieldLotName);
+        pane.getChildren().add(listViewParkingLots);
         Scene scene = new Scene(pane);
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
@@ -120,6 +176,11 @@ public class Main extends Application implements WebcamListener {
         }));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
+    }
+
+    private void toggleButtonAddParkingLot()
+    {
+        buttonAddParkingLot.setDisable(parkingLotPixels.isEmpty() || textFieldLotName.getText().isEmpty());
     }
 
     private void updateImageView() {
