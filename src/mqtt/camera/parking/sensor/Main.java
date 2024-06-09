@@ -66,6 +66,21 @@ public class Main extends Application implements WebcamListener {
         username = loadStringFromFile("res" + fileSeparator + "mqtt_username.txt", username);
         password = loadStringFromFile("res" + fileSeparator + "mqtt_password.txt", password);
 
+        try{
+            greyTolerance = Integer.parseInt(loadStringFromFile("res" + fileSeparator + "grey_tolerance.txt", String.valueOf(greyTolerance)));
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        try{
+            blackThreshold = Integer.parseInt(loadStringFromFile("res" + fileSeparator + "black_threshold.txt", String.valueOf(blackThreshold)));
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+
         List<Webcam> webcams = Webcam.getWebcams();
         ComboBox<Webcam> comboBox = new ComboBox<>();
         comboBox.getItems().addAll(webcams);
@@ -216,7 +231,7 @@ public class Main extends Application implements WebcamListener {
             parkingCount = 0;
             for(ParkingLot parkingLot : parkingLots)
             {
-                parkingLot.calculateIfParkingLotIsFree(bufferedImage, 40);
+                parkingLot.calculateIfParkingLotIsFree(bufferedImage, greyTolerance, blackThreshold);
                 if(parkingLot.isFree())
                 {
                     parkingCount++;
