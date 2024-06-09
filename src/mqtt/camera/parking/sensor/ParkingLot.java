@@ -16,7 +16,7 @@ public class ParkingLot implements Serializable {
         this.pixelPlaces = pixelPlaces;
     }
 
-    public void calculateIfParkingLotIsFree(BufferedImage bufferedImage, int tolerance)
+    public void calculateIfParkingLotIsFree(BufferedImage bufferedImage, int greyTolerance, int blackThreshold)
     {
         boolean free = true;
         int averageColor;
@@ -30,16 +30,16 @@ public class ParkingLot implements Serializable {
             green = c.getGreen();
             blue = c.getBlue();
             averageColor = (red + green + blue) / 3;
-            int min = averageColor - tolerance;
-            int max = averageColor + tolerance;
+            int min = averageColor - greyTolerance;
+            int max = averageColor + greyTolerance;
 
             // if any of these colors are off the tolerance range the parking lot if not free
             if(red > max || red < min
             || green > max || green < min
             || blue > max || blue < min
-            || red < tolerance// or of any point is too dark
-            || green < tolerance
-            || blue < tolerance)
+            || red < blackThreshold// or of any point is too dark
+            || green < blackThreshold
+            || blue < blackThreshold)
             {
                 free = false;
                 break;
