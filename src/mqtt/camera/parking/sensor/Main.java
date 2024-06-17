@@ -29,6 +29,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.ByteArrayOutputStream;
+import java.util.Base64;
+import javax.imageio.ImageIO;
 
 import static mqtt.camera.parking.sensor.AppParameters.*;
 import static mqtt.camera.parking.sensor.ParkingLotsFile.*;
@@ -249,6 +252,18 @@ public class Main extends Application implements WebcamListener {
         }
     }
 
+    private String encodeImageToBase64(BufferedImage image) {
+        String base64Image = "";
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            ImageIO.write(image, "png", baos);
+            byte[] imageBytes = baos.toByteArray();
+            base64Image = Base64.getEncoder().encodeToString(imageBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return base64Image;
+    }
+
     private void publishMQTT()
     {
         int value = parkingCount;
@@ -287,6 +302,16 @@ public class Main extends Application implements WebcamListener {
             message.setQos(qos);
             sampleClient.publish(topic, message);
             System.out.println("Message published");
+
+            // Publish image as Base64
+            if (bufferedImage != null) {
+                String base64Image = encodeImageToBase64(bufferedImage);
+                String imageTopic = "parking/sensor/image";
+                MqttMessage imageMessage = new MqttMessage(base64Image.getBytes());
+                imageMessage.setQos(qos);
+                sampleClient.publish(imageTopic, imageMessage);
+                System.out.println("Image message published");
+            }
 
             sampleClient.disconnect();
             System.out.println("Disconnected");
