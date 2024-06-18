@@ -29,6 +29,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.ByteArrayOutputStream;
+import java.util.Base64;
+import javax.imageio.ImageIO;
 
 import static mqtt.camera.parking.sensor.AppParameters.*;
 import static mqtt.camera.parking.sensor.ParkingLotsFile.*;
@@ -62,7 +65,8 @@ public class Main extends Application implements WebcamListener {
 
         brokerAddress = loadStringFromFile("res" + fileSeparator + "mqtt_broker_address.txt", brokerAddress);
         clientId = loadStringFromFile("res" + fileSeparator + "mqtt_client_id.txt", clientId);
-        topic = loadStringFromFile("res" + fileSeparator + "mqtt_topic.txt", topic);
+        mqtt_sensor_topic = loadStringFromFile("res" + fileSeparator + "mqtt_sensor_topic.txt", mqtt_sensor_topic);
+        mqtt_image_topic = loadStringFromFile("res" + fileSeparator + "mqtt_image_topic.txt", mqtt_image_topic);
         username = loadStringFromFile("res" + fileSeparator + "mqtt_username.txt", username);
         password = loadStringFromFile("res" + fileSeparator + "mqtt_password.txt", password);
 
@@ -249,6 +253,18 @@ public class Main extends Application implements WebcamListener {
         }
     }
 
+    private String encodeImageToBase64(BufferedImage image) {
+        String base64Image = "";
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            ImageIO.write(image, "png", baos);
+            byte[] imageBytes = baos.toByteArray();
+            base64Image = Base64.getEncoder().encodeToString(imageBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return base64Image;
+    }
+
     private void publishMQTT()
     {
         int value = parkingCount;
@@ -285,8 +301,18 @@ public class Main extends Application implements WebcamListener {
             String content = Integer.toString(value); // Convert the integer value to string
             MqttMessage message = new MqttMessage(content.getBytes());
             message.setQos(qos);
-            sampleClient.publish(topic, message);
+            sampleClient.publish(mqtt_sensor_topic, message);
             System.out.println("Message published");
+
+            // Publish image as Base64
+            if (bufferedImage != null) {
+                String base64Image = encodeImageToBase64(bufferedImage);
+                String imageTopic = mqtt_image_topic;
+                MqttMessage imageMessage = new MqttMessage(base64Image.getBytes());
+                imageMessage.setQos(qos);
+                sampleClient.publish(imageTopic, imageMessage);
+                System.out.println("Image message published");
+            }
 
             sampleClient.disconnect();
             System.out.println("Disconnected");
