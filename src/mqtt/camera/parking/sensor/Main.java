@@ -260,6 +260,7 @@ public class Main extends Application implements WebcamListener {
             ImageIO.write(image, "png", baos);
             byte[] imageBytes = baos.toByteArray();
             base64Image = Base64.getEncoder().encodeToString(imageBytes);
+            image.flush();
         } catch (Exception e) {
             e.printStackTrace();
         }
