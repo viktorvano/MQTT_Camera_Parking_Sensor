@@ -258,7 +258,7 @@ public class Main extends Application implements WebcamListener {
             }
 
             fiveSecIntervals++;
-            if(fiveSecIntervals > 6)
+            if(fiveSecIntervals >= 3)
             {
                 fiveSecIntervals = 0;
                 System.out.println("Sending Image only via MQTT.");
