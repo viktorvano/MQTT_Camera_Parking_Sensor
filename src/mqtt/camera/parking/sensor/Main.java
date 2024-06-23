@@ -109,13 +109,6 @@ public class Main extends Application implements WebcamListener {
             }
         });
 
-        if (!webcams.isEmpty()) {
-            webcam = webcams.get(0);
-            webcam.setViewSize(WebcamResolution.VGA.getSize());
-            webcam.addWebcamListener(Main.this);
-            webcam.open();
-        }
-
         imageView = new ImageView();
         imageView.setImage(image);
         imageView.setLayoutX(6);
