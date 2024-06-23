@@ -52,6 +52,7 @@ public class Main extends Application implements WebcamListener {
     private int lastParkingCount = -1;
     private Label labelParkingCount;
     private ListView<ParkingLot> listViewParkingLots;
+    private Timeline timeline;
 
     public static void main(String[] args)
     {
@@ -221,7 +222,7 @@ public class Main extends Application implements WebcamListener {
         primaryStage.setTitle("MQTT Camera Parking Sensor - " + version);
         primaryStage.show();
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(5000), event -> {
+        timeline = new Timeline(new KeyFrame(Duration.millis(5000), event -> {
             checkParkingLots();
         }));
         timeline.setCycleCount(Timeline.INDEFINITE);
@@ -332,6 +333,9 @@ public class Main extends Application implements WebcamListener {
     }
 
     private void updateImageView() {
+        if (bufferedImage != null) {
+            bufferedImage.flush(); // Release previous image resources
+        }
         bufferedImage = webcam.getImage();
         image = SwingFXUtils.toFXImage(bufferedImage, null);
         imageView.setImage(image);
@@ -340,6 +344,12 @@ public class Main extends Application implements WebcamListener {
     @Override
     public void stop() throws Exception {
         super.stop();
+        if (timeline != null) {
+            timeline.stop();
+        }
+        if (webcam != null && webcam.isOpen()) {
+            webcam.close();
+        }
         System.out.println("Closing Application.");
     }
 
