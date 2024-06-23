@@ -18,6 +18,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -50,8 +51,12 @@ public class Main extends Application implements WebcamListener {
     private final TextField textFieldLotName = new TextField();
     private final ObservableList<ParkingLot> parkingLots = FXCollections.observableArrayList();
     private int lastParkingCount = -1;
+    private int fiveSecIntervals = 0;
     private Label labelParkingCount;
     private ListView<ParkingLot> listViewParkingLots;
+    private Timeline timeline;
+    private MqttClient sampleClient;
+    private MqttConnectOptions connOpts;
 
     public static void main(String[] args)
     {
@@ -103,13 +108,6 @@ public class Main extends Application implements WebcamListener {
                 updateImageView();
             }
         });
-
-        if (!webcams.isEmpty()) {
-            webcam = webcams.get(0);
-            webcam.setViewSize(WebcamResolution.VGA.getSize());
-            webcam.addWebcamListener(Main.this);
-            webcam.open();
-        }
 
         imageView = new ImageView();
         imageView.setImage(image);
@@ -221,7 +219,7 @@ public class Main extends Application implements WebcamListener {
         primaryStage.setTitle("MQTT Camera Parking Sensor - " + version);
         primaryStage.show();
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(5000), event -> {
+        timeline = new Timeline(new KeyFrame(Duration.millis(5000), event -> {
             checkParkingLots();
         }));
         timeline.setCycleCount(Timeline.INDEFINITE);
@@ -249,6 +247,16 @@ public class Main extends Application implements WebcamListener {
             {
                 publishMQTT();
                 lastParkingCount = parkingCount;
+                fiveSecIntervals = 0;
+            }
+
+            fiveSecIntervals++;
+            if(fiveSecIntervals >= 3)
+            {
+                fiveSecIntervals = 0;
+                System.out.println("Sending Image only via MQTT.");
+                publishImageViaMQTT();
+                System.gc();
             }
         }
     }
@@ -261,8 +269,35 @@ public class Main extends Application implements WebcamListener {
             base64Image = Base64.getEncoder().encodeToString(imageBytes);
         } catch (Exception e) {
             e.printStackTrace();
+        }finally {
+            image.flush();
         }
         return base64Image;
+    }
+
+    private void initializeMQTTClient() throws MqttException {
+        sampleClient = new MqttClient(brokerAddress, clientId);
+        sampleClient.setCallback(new MqttCallback() {
+            @Override
+            public void connectionLost(Throwable cause) {
+                System.out.println("Connection lost: " + cause.getMessage());
+            }
+
+            @Override
+            public void messageArrived(String topic, MqttMessage message) {
+                System.out.println("Message arrived. Topic: " + topic + " Message: " + new String(message.getPayload()));
+            }
+
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken token) {
+                System.out.println("Delivery complete: " + token.getMessageId());
+            }
+        });
+
+        connOpts = new MqttConnectOptions();
+        connOpts.setCleanSession(true);
+        connOpts.setUserName(username);
+        connOpts.setPassword(password.toCharArray());
     }
 
     private void publishMQTT()
@@ -271,28 +306,9 @@ public class Main extends Application implements WebcamListener {
         int qos = 2;
 
         try {
-            MqttClient sampleClient = new MqttClient(brokerAddress, clientId);
-            sampleClient.setCallback(new MqttCallback() {
-                @Override
-                public void connectionLost(Throwable cause) {
-                    System.out.println("Connection lost: " + cause.getMessage());
-                }
-
-                @Override
-                public void messageArrived(String topic, MqttMessage message) {
-                    System.out.println("Message arrived. Topic: " + topic + " Message: " + new String(message.getPayload()));
-                }
-
-                @Override
-                public void deliveryComplete(IMqttDeliveryToken token) {
-                    System.out.println("Delivery complete: " + token.getMessageId());
-                }
-            });
-
-            MqttConnectOptions connOpts = new MqttConnectOptions();
-            connOpts.setCleanSession(true);
-            connOpts.setUserName(username);
-            connOpts.setPassword(password.toCharArray());
+            if (sampleClient == null || !sampleClient.isConnected()) {
+                initializeMQTTClient();
+            }
 
             System.out.println("Connecting to broker: " + brokerAddress);
             sampleClient.connect(connOpts);
@@ -326,12 +342,51 @@ public class Main extends Application implements WebcamListener {
         }
     }
 
+    private void publishImageViaMQTT()
+    {
+        int value = parkingCount;
+        int qos = 2;
+
+        try {
+            if (sampleClient == null || !sampleClient.isConnected()) {
+                initializeMQTTClient();
+            }
+
+            System.out.println("Connecting to broker: " + brokerAddress);
+            sampleClient.connect(connOpts);
+            System.out.println("Connected");
+
+            // Publish image as Base64
+            if (bufferedImage != null) {
+                String base64Image = encodeImageToBase64(bufferedImage);
+                String imageTopic = mqtt_image_topic;
+                MqttMessage imageMessage = new MqttMessage(base64Image.getBytes());
+                imageMessage.setQos(qos);
+                sampleClient.publish(imageTopic, imageMessage);
+                System.out.println("Image message published");
+            }
+
+            sampleClient.disconnect();
+            System.out.println("Disconnected");
+        } catch (MqttException me) {
+            System.out.println("Reason: " + me.getReasonCode());
+            System.out.println("Message: " + me.getMessage());
+            System.out.println("Localized: " + me.getLocalizedMessage());
+            System.out.println("Cause: " + me.getCause());
+            System.out.println("Exception: " + me);
+            me.printStackTrace();
+        }
+    }
+
     private void toggleButtonAddParkingLot()
     {
         buttonAddParkingLot.setDisable(parkingLotPixels.isEmpty() || textFieldLotName.getText().isEmpty());
     }
 
     private void updateImageView() {
+        if (bufferedImage != null) {
+            bufferedImage.flush(); // Release previous image resources
+        }
         bufferedImage = webcam.getImage();
         image = SwingFXUtils.toFXImage(bufferedImage, null);
         imageView.setImage(image);
@@ -340,6 +395,12 @@ public class Main extends Application implements WebcamListener {
     @Override
     public void stop() throws Exception {
         super.stop();
+        if (timeline != null) {
+            timeline.stop();
+        }
+        if (webcam != null && webcam.isOpen()) {
+            webcam.close();
+        }
         System.out.println("Closing Application.");
     }
 

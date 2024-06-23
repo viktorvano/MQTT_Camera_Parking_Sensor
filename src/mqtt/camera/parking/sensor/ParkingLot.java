@@ -46,6 +46,9 @@ public class ParkingLot implements Serializable {
             }
         }
 
+        if(bufferedImage != null)
+            bufferedImage.flush();
+
         this.isFree = free;
     }
 
