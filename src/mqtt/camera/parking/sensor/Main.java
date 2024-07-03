@@ -18,13 +18,14 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.control.Label;
 import org.eclipse.paho.client.mqttv3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -57,6 +58,7 @@ public class Main extends Application implements WebcamListener {
     private Timeline timeline;
     private MqttClient sampleClient;
     private MqttConnectOptions connOpts;
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args)
     {
@@ -74,6 +76,8 @@ public class Main extends Application implements WebcamListener {
         mqtt_image_topic = loadStringFromFile("res" + fileSeparator + "mqtt_image_topic.txt", mqtt_image_topic);
         username = loadStringFromFile("res" + fileSeparator + "mqtt_username.txt", username);
         password = loadStringFromFile("res" + fileSeparator + "mqtt_password.txt", password);
+
+        logger.info("Application started.");
 
         try{
             greyTolerance = Integer.parseInt(loadStringFromFile("res" + fileSeparator + "grey_tolerance.txt", String.valueOf(greyTolerance)));
