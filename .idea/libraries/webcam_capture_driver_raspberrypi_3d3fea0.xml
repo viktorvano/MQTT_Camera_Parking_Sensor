@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="webcam-capture-driver-raspberrypi-3d3fea0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/webcam-capture-driver-raspberrypi-3d3fea0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

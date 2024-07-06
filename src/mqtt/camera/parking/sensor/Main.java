@@ -34,6 +34,7 @@ import java.util.List;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 import javax.imageio.ImageIO;
+import com.github.sarxos.webcam.ds.raspberrypi.*;
 
 import static mqtt.camera.parking.sensor.AppParameters.*;
 import static mqtt.camera.parking.sensor.ParkingLotsFile.*;
@@ -59,6 +60,18 @@ public class Main extends Application implements WebcamListener {
     private MqttClient sampleClient;
     private MqttConnectOptions connOpts;
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
+    static {
+        // Because is its based on pure Java image processing, the performance of RaspistillDriver and RaspiYUVDriver is not very good.
+        // The actuall FPS is low. According to test, about 500ms for PNG decoder to decode 640x480 image from raspistill stream.
+        // But the advantage of RaspividDriver and RaspividYUVDriver is the fact that Java code is
+        // comsuming RAW RGB24 data in almost realtime by following native process STDOUT.
+
+        //Webcam.setDriver(new RaspistillDriver());
+        Webcam.setDriver(new RaspiYUVDriver());
+        //Webcam.setDriver(new RaspividDriver());
+        //Webcam.setDriver(new RaspividYUVDriver());
+    }
 
     public static void main(String[] args)
     {
