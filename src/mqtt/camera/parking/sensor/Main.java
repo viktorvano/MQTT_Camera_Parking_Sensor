@@ -71,6 +71,14 @@ public class Main extends Application implements WebcamListener {
         Webcam.setDriver(new RaspiYUVDriver());
         //Webcam.setDriver(new RaspividDriver());
         //Webcam.setDriver(new RaspividYUVDriver());
+
+        try {
+            System.load("/home/viktorvano/Documents/GitHub/MQTT_Camera_Parking_Sensor/libs/linux_arm64/libbridj.so");
+            System.out.println("Library loaded successfully.");
+        } catch (UnsatisfiedLinkError e) {
+            System.err.println("Failed to load library: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args)

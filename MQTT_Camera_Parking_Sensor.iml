@@ -11,5 +11,8 @@
     <orderEntry type="library" name="slf4j.nop" level="project" />
     <orderEntry type="library" name="github.sarxos.webcam.capture" level="project" />
     <orderEntry type="library" name="webcam-capture-driver-raspberrypi-3d3fea0" level="project" />
+    <orderEntry type="library" name="linux_arm64" level="project" />
+    <orderEntry type="library" name="lib" level="project" />
+    <orderEntry type="library" name="javafx-swt" level="project" />
   </component>
 </module>
