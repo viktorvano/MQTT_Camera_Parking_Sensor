@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
+import java.util.Random;
 import javax.imageio.ImageIO;
 
 import static mqtt.camera.parking.sensor.AppParameters.*;
@@ -59,6 +60,7 @@ public class Main extends Application implements WebcamListener {
     private MqttClient sampleClient;
     private MqttConnectOptions connOpts;
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    private final ComboBox<Webcam> comboBoxWebCams = new ComboBox<>();
 
     public static void main(String[] args)
     {
@@ -95,21 +97,29 @@ public class Main extends Application implements WebcamListener {
 
 
         List<Webcam> webcams = Webcam.getWebcams();
-        ComboBox<Webcam> comboBox = new ComboBox<>();
-        comboBox.getItems().addAll(webcams);
-        comboBox.setPromptText("Select Camera");
-        comboBox.setLayoutX(10);
-        comboBox.setLayoutY(500);
-        comboBox.setOnAction(event -> {
+        comboBoxWebCams.getItems().addAll(webcams);
+        comboBoxWebCams.setPromptText("Select Camera");
+        comboBoxWebCams.setLayoutX(10);
+        comboBoxWebCams.setLayoutY(500);
+        comboBoxWebCams.setOnAction(event -> {
             if (webcam != null && webcam.isOpen()) {
+                webcam.removeWebcamListener(Main.this);
                 webcam.close();
             }
-            webcam = comboBox.getSelectionModel().getSelectedItem();
-            if (webcam != null) {
-                webcam.setViewSize(WebcamResolution.VGA.getSize());
-                webcam.addWebcamListener(Main.this);
-                webcam.open();
-                updateImageView();
+
+            try
+            {
+                webcam = comboBoxWebCams.getSelectionModel().getSelectedItem();
+                if (webcam != null) {
+                    webcam.setViewSize(WebcamResolution.VGA.getSize());
+                    webcam.addWebcamListener(Main.this);
+                    webcam.open();
+                    updateImageView();
+                }
+            }catch (Exception e)
+            {
+                e.printStackTrace();
+                fixWebcamStream();
             }
         });
 
@@ -210,7 +220,7 @@ public class Main extends Application implements WebcamListener {
         pane.setStyle("-fx-background-color: #7F7F7F");
         pane.getChildren().add(imageView);
         pane.getChildren().add(labelParkingCount);
-        pane.getChildren().add(comboBox);
+        pane.getChildren().add(comboBoxWebCams);
         pane.getChildren().add(listViewLotPixels);
         pane.getChildren().add(buttonClearPixelList);
         pane.getChildren().add(buttonAddParkingLot);
@@ -224,10 +234,76 @@ public class Main extends Application implements WebcamListener {
         primaryStage.show();
 
         timeline = new Timeline(new KeyFrame(Duration.millis(5000), event -> {
-            checkParkingLots();
+            if(webcam != null && webcam.isOpen())
+            {
+                checkParkingLots();
+            }
+            else {
+                fixWebcamStream();
+            }
         }));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
+
+        selectFirstRandomCamera();
+    }
+
+    private void selectFirstRandomCamera()
+    {
+        if (webcam != null && webcam.isOpen()) {
+            webcam.removeWebcamListener(Main.this);
+            webcam.close();
+        }
+
+        try
+        {
+            List<Webcam> webcams = Webcam.getWebcams();
+            comboBoxWebCams.getItems().clear();
+            comboBoxWebCams.getItems().addAll(webcams);
+
+            Random random = new Random();
+            int randomIndex = random.nextInt(webcams.size()); // Get a random index
+            webcam = webcams.get(randomIndex); // Select the webcam at the random index
+            comboBoxWebCams.getSelectionModel().select(webcam);
+            if (webcam != null) {
+                webcam.setViewSize(WebcamResolution.VGA.getSize());
+                webcam.addWebcamListener(Main.this);
+                webcam.open();
+                updateImageView();
+            }
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            fixWebcamStream();
+        }
+    }
+
+    private void fixWebcamStream()
+    {
+        try
+        {
+            if (webcam != null && webcam.isOpen()){
+                webcam.removeWebcamListener(Main.this);
+                webcam.close();
+            }
+
+            List<Webcam> webcams = Webcam.getWebcams();
+            comboBoxWebCams.getItems().clear();
+            comboBoxWebCams.getItems().addAll(webcams);
+
+            Random random = new Random();
+            int randomIndex = random.nextInt(webcams.size()); // Get a random index
+            webcam = webcams.get(randomIndex); // Select the webcam at the random index
+            comboBoxWebCams.getSelectionModel().select(webcam);
+            if (webcam != null) {
+                webcam.setViewSize(WebcamResolution.VGA.getSize());
+                webcam.addWebcamListener(Main.this);
+                webcam.open();
+            }
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private void checkParkingLots()
@@ -391,9 +467,16 @@ public class Main extends Application implements WebcamListener {
         if (bufferedImage != null) {
             bufferedImage.flush(); // Release previous image resources
         }
-        bufferedImage = webcam.getImage();
-        image = SwingFXUtils.toFXImage(bufferedImage, null);
-        imageView.setImage(image);
+
+        if(webcam != null && webcam.isOpen())
+        {
+            bufferedImage = webcam.getImage();
+            image = SwingFXUtils.toFXImage(bufferedImage, null);
+            imageView.setImage(image);
+        }else
+        {
+            fixWebcamStream();
+        }
     }
 
     @Override
@@ -403,6 +486,7 @@ public class Main extends Application implements WebcamListener {
             timeline.stop();
         }
         if (webcam != null && webcam.isOpen()) {
+            webcam.removeWebcamListener(Main.this);
             webcam.close();
         }
         System.out.println("Closing Application.");
