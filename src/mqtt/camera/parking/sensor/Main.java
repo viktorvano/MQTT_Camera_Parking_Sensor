@@ -231,6 +231,7 @@ public class Main extends Application implements WebcamListener {
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.setTitle("MQTT Camera Parking Sensor - " + version);
+        primaryStage.getIcons().add(new Image("/mqtt/camera/parking/sensor/resources/icon.jpg"));
         primaryStage.show();
 
         timeline = new Timeline(new KeyFrame(Duration.millis(5000), event -> {
