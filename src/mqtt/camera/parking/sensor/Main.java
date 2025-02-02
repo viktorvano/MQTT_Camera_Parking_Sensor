@@ -29,11 +29,9 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.io.ByteArrayOutputStream;
-import java.util.Base64;
-import java.util.Random;
+import java.util.List;
 import javax.imageio.ImageIO;
 
 import static mqtt.camera.parking.sensor.AppParameters.*;
@@ -189,6 +187,9 @@ public class Main extends Application implements WebcamListener {
             }
 
             parkingLots.add(new ParkingLot(parkingLotName, pixelPlaces));
+
+            FXCollections.sort(parkingLots, Comparator.comparing(ParkingLot::getName));
+
             saveParkingLots(parkingLots);
 
             textFieldLotName.setText("");
@@ -204,6 +205,9 @@ public class Main extends Application implements WebcamListener {
             if(index != -1)
             {
                 parkingLots.remove(index);
+
+                FXCollections.sort(parkingLots, Comparator.comparing(ParkingLot::getName));
+
                 saveParkingLots(parkingLots);
             }
         });

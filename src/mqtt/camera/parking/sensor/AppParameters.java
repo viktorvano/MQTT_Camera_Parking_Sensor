@@ -1,7 +1,7 @@
 package mqtt.camera.parking.sensor;
 
 public class AppParameters {
-    public static final String version = "v20241225";
+    public static final String version = "v20250202";
     public static final String fileSeparator = System.getProperty("file.separator");
     public static String brokerAddress = "tcp://192.168.1.25:1883"; // Full Broker URL + port
     public static String clientId = "Parking Camera Sensor";
