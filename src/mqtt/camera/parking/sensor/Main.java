@@ -93,6 +93,13 @@ public class Main extends Application implements WebcamListener {
             e.printStackTrace();
         }
 
+        try{
+            whiteThreshold = Integer.parseInt(loadStringFromFile("res" + fileSeparator + "white_threshold.txt", String.valueOf(whiteThreshold)));
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
 
         List<Webcam> webcams = Webcam.getWebcams();
         comboBoxWebCams.getItems().addAll(webcams);
@@ -318,7 +325,7 @@ public class Main extends Application implements WebcamListener {
             parkingCount = 0;
             for(ParkingLot parkingLot : parkingLots)
             {
-                parkingLot.calculateIfParkingLotIsFree(bufferedImage, greyTolerance, blackThreshold);
+                parkingLot.calculateIfParkingLotIsFree(bufferedImage, greyTolerance, blackThreshold, whiteThreshold);
                 if(parkingLot.isFree())
                 {
                     parkingCount++;

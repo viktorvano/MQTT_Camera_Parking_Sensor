@@ -1,7 +1,7 @@
 package mqtt.camera.parking.sensor;
 
 public class AppParameters {
-    public static final String version = "v20250202";
+    public static final String version = "v20250406";
     public static final String fileSeparator = System.getProperty("file.separator");
     public static String brokerAddress = "tcp://192.168.1.25:1883"; // Full Broker URL + port
     public static String clientId = "Parking Camera Sensor";
@@ -11,4 +11,5 @@ public class AppParameters {
     public static String password = "default_mqtt_password";
     public static int greyTolerance = 40;
     public static int blackThreshold = 60;
+    public static int whiteThreshold = 250;
 }
