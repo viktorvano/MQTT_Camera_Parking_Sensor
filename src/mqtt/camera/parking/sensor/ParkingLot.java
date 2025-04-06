@@ -16,7 +16,7 @@ public class ParkingLot implements Serializable {
         this.pixelPlaces = pixelPlaces;
     }
 
-    public void calculateIfParkingLotIsFree(BufferedImage bufferedImage, int greyTolerance, int blackThreshold)
+    public void calculateIfParkingLotIsFree(BufferedImage bufferedImage, int greyTolerance, int blackThreshold, int whiteThreshold)
     {
         boolean free = true;
         int averageColor;
@@ -39,7 +39,11 @@ public class ParkingLot implements Serializable {
             || blue > max || blue < min
             || red < blackThreshold// or of any point is too dark
             || green < blackThreshold
-            || blue < blackThreshold)
+            || blue < blackThreshold
+            ||
+            (red > whiteThreshold// or of any point is too white
+            && green > whiteThreshold
+            && blue > whiteThreshold))
             {
                 free = false;
                 break;
