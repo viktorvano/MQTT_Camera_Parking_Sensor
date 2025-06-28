@@ -762,9 +762,9 @@ public class Main extends Application implements WebcamListener {
             base64Image = Base64.getEncoder().encodeToString(imageBytes);
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
+        }/*finally {
             image.flush();
-        }
+        }*/
         return base64Image;
     }
 
@@ -799,14 +799,19 @@ public class Main extends Application implements WebcamListener {
         int qos = 2;
 
         try {
-            if (sampleClient == null || !sampleClient.isConnected()) {
-                initializeMQTTClient();
+            if (sampleClient == null || !sampleClient.isConnected())//runs only when needed
+            {
+                if(sampleClient == null)
+                {
+                    System.out.println("Initializing broker: " + brokerAddress);
+                    initializeMQTTClient();
+                }
+                if(!sampleClient.isConnected())
+                {
+                    sampleClient.connect(connOpts);
+                    System.out.println("MQTT Client Connected");
+                }
             }
-
-            System.out.println("Connecting to broker: " + brokerAddress);
-            if(!sampleClient.isConnected())
-                sampleClient.connect(connOpts);
-            System.out.println("Connected");
 
             String content = Integer.toString(value); // Convert the integer value to string
             MqttMessage message = new MqttMessage(content.getBytes());
@@ -830,7 +835,6 @@ public class Main extends Application implements WebcamListener {
             System.out.println("Cause: " + me.getCause());
             System.out.println("Exception: " + me);
             me.printStackTrace();
-        }finally {
             try {
                 if (sampleClient != null)
                 {
@@ -851,14 +855,19 @@ public class Main extends Application implements WebcamListener {
         int qos = 2;
 
         try {
-            if (sampleClient == null || !sampleClient.isConnected()) {
-                initializeMQTTClient();
+            if (sampleClient == null || !sampleClient.isConnected())//runs only when needed
+            {
+                if(sampleClient == null)
+                {
+                    System.out.println("Initializing broker: " + brokerAddress);
+                    initializeMQTTClient();
+                }
+                if(!sampleClient.isConnected())
+                {
+                    sampleClient.connect(connOpts);
+                    System.out.println("MQTT Client Connected");
+                }
             }
-
-            System.out.println("Connecting to broker: " + brokerAddress);
-            if(!sampleClient.isConnected())
-                sampleClient.connect(connOpts);
-            System.out.println("Connected");
 
             String content = Integer.toString(value); // Convert the integer value to string
             MqttMessage message = new MqttMessage(content.getBytes());
@@ -882,7 +891,6 @@ public class Main extends Application implements WebcamListener {
             System.out.println("Cause: " + me.getCause());
             System.out.println("Exception: " + me);
             me.printStackTrace();
-        }finally {
             try {
                 if (sampleClient != null)
                 {
@@ -942,6 +950,19 @@ public class Main extends Application implements WebcamListener {
     @Override
     public void stop() throws Exception {
         super.stop();
+
+        try {
+            if (sampleClient != null)
+            {
+                sampleClient.disconnect();
+                sampleClient.close();
+            }
+            System.out.println("Disconnected");
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
         if (timeline != null) {
             timeline.stop();
         }
