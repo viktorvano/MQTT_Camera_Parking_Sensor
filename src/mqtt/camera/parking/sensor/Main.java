@@ -61,10 +61,6 @@ public class Main extends Application implements WebcamListener {
     private final TextField textFieldLotName2 = new TextField();
     private final ObservableList<ParkingLot> parkingLots = FXCollections.observableArrayList();
     private final ObservableList<ParkingLot> parkingLots2 = FXCollections.observableArrayList();
-    private int lastParkingCount = -1;
-    private int lastParkingCount2 = -1;
-    private int fiveSecIntervals = 0;
-    private int fiveSecIntervals2 = 0;
     private Label labelParkingCount;
     private Label labelParkingCount2;
     private ListView<ParkingLot> listViewParkingLots;
@@ -424,7 +420,7 @@ public class Main extends Application implements WebcamListener {
         primaryStage.getIcons().add(new Image("/mqtt/camera/parking/sensor/resources/icon.jpg"));
         primaryStage.show();
 
-        timeline = new Timeline(new KeyFrame(Duration.millis(5000), event -> {
+        timeline = new Timeline(new KeyFrame(Duration.millis(15000), event -> {
 
             cameraToggle = !cameraToggle;
             keepOneCameraOpen();
@@ -691,21 +687,8 @@ public class Main extends Application implements WebcamListener {
             labelParkingCount.setText("Parking count: " + parkingCount);
             listViewParkingLots.refresh();
 
-            if(parkingCount != lastParkingCount)
-            {
-                publishMQTT();
-                lastParkingCount = parkingCount;
-                fiveSecIntervals = 0;
-            }
-
-            fiveSecIntervals++;
-            if(fiveSecIntervals >= 3)
-            {
-                fiveSecIntervals = 0;
-                System.out.println("Sending Image only via MQTT.");
-                publishImageViaMQTT();
-                System.gc();
-            }
+            publishMQTT();
+            System.gc();
         }
     }
 
@@ -726,21 +709,8 @@ public class Main extends Application implements WebcamListener {
             labelParkingCount2.setText("Parking count: " + parkingCount2);
             listViewParkingLots2.refresh();
 
-            if(parkingCount2 != lastParkingCount2)
-            {
-                publishMQTT2();
-                lastParkingCount2 = parkingCount2;
-                fiveSecIntervals2 = 0;
-            }
-
-            fiveSecIntervals2++;
-            if(fiveSecIntervals2 >= 3)
-            {
-                fiveSecIntervals2 = 0;
-                System.out.println("Sending Image only via MQTT.");
-                publishImageViaMQTT2();
-                System.gc();
-            }
+            publishMQTT2();
+            System.gc();
         }
     }
 
@@ -852,94 +822,6 @@ public class Main extends Application implements WebcamListener {
             message.setQos(qos);
             sampleClient.publish(mqtt_sensor_topic2, message);
             System.out.println("Message2 published");
-
-            // Publish image as Base64
-            if (bufferedImage2 != null) {
-                String base64Image = encodeImageToBase64(bufferedImage2);
-                String imageTopic = mqtt_image_topic2;
-                MqttMessage imageMessage = new MqttMessage(base64Image.getBytes());
-                imageMessage.setQos(qos);
-                sampleClient.publish(imageTopic, imageMessage);
-                System.out.println("Image2 message published");
-            }
-        } catch (MqttException me) {
-            System.out.println("Reason: " + me.getReasonCode());
-            System.out.println("Message: " + me.getMessage());
-            System.out.println("Localized: " + me.getLocalizedMessage());
-            System.out.println("Cause: " + me.getCause());
-            System.out.println("Exception: " + me);
-            me.printStackTrace();
-        }finally {
-            try {
-                if (sampleClient != null)
-                {
-                    sampleClient.disconnect();
-                }
-                System.out.println("Disconnected");
-            } catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void publishImageViaMQTT()
-    {
-        int value = parkingCount;
-        int qos = 2;
-
-        try {
-            if (sampleClient == null || !sampleClient.isConnected()) {
-                initializeMQTTClient();
-            }
-
-            System.out.println("Connecting to broker: " + brokerAddress);
-            sampleClient.connect(connOpts);
-            System.out.println("Connected");
-
-            // Publish image as Base64
-            if (bufferedImage != null) {
-                String base64Image = encodeImageToBase64(bufferedImage);
-                String imageTopic = mqtt_image_topic;
-                MqttMessage imageMessage = new MqttMessage(base64Image.getBytes());
-                imageMessage.setQos(qos);
-                sampleClient.publish(imageTopic, imageMessage);
-                System.out.println("Image message published");
-            }
-        } catch (MqttException me) {
-            System.out.println("Reason: " + me.getReasonCode());
-            System.out.println("Message: " + me.getMessage());
-            System.out.println("Localized: " + me.getLocalizedMessage());
-            System.out.println("Cause: " + me.getCause());
-            System.out.println("Exception: " + me);
-            me.printStackTrace();
-        }finally {
-            try {
-                if (sampleClient != null)
-                {
-                    sampleClient.disconnect();
-                }
-                System.out.println("Disconnected");
-            } catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void publishImageViaMQTT2()
-    {
-        int value = parkingCount2;
-        int qos = 2;
-
-        try {
-            if (sampleClient == null || !sampleClient.isConnected()) {
-                initializeMQTTClient();
-            }
-
-            System.out.println("Connecting to broker: " + brokerAddress);
-            sampleClient.connect(connOpts);
-            System.out.println("Connected");
 
             // Publish image as Base64
             if (bufferedImage2 != null) {
