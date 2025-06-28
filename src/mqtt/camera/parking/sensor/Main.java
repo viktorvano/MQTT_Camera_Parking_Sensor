@@ -804,7 +804,8 @@ public class Main extends Application implements WebcamListener {
             }
 
             System.out.println("Connecting to broker: " + brokerAddress);
-            sampleClient.connect(connOpts);
+            if(!sampleClient.isConnected())
+                sampleClient.connect(connOpts);
             System.out.println("Connected");
 
             String content = Integer.toString(value); // Convert the integer value to string
@@ -834,6 +835,7 @@ public class Main extends Application implements WebcamListener {
                 if (sampleClient != null)
                 {
                     sampleClient.disconnect();
+                    sampleClient.close();
                 }
                 System.out.println("Disconnected");
             } catch (Exception e)
@@ -854,7 +856,8 @@ public class Main extends Application implements WebcamListener {
             }
 
             System.out.println("Connecting to broker: " + brokerAddress);
-            sampleClient.connect(connOpts);
+            if(!sampleClient.isConnected())
+                sampleClient.connect(connOpts);
             System.out.println("Connected");
 
             String content = Integer.toString(value); // Convert the integer value to string
@@ -884,6 +887,7 @@ public class Main extends Application implements WebcamListener {
                 if (sampleClient != null)
                 {
                     sampleClient.disconnect();
+                    sampleClient.close();
                 }
                 System.out.println("Disconnected");
             } catch (Exception e)
