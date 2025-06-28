@@ -586,15 +586,6 @@ public class Main extends Application implements WebcamListener {
     {
         try
         {
-            if (webcam != null && webcam.isOpen()){
-                try{
-                    webcam.removeWebcamListener(Main.this);
-                }catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-                webcam.close();
-            }
             closeAllCameras();
 
             List<Webcam> webcams = Webcam.getWebcams();
@@ -618,6 +609,9 @@ public class Main extends Application implements WebcamListener {
                 int randomIndex = random.nextInt(webcams.size()); // Get a random index
                 webcam = webcams.get(randomIndex); // Select the webcam at the random index
             }
+            if (webcam.isOpen()) {
+                webcam.close();
+            }
             comboBoxWebCams.getSelectionModel().select(webcam);
             if (webcam != null) {
                 try{
@@ -638,15 +632,6 @@ public class Main extends Application implements WebcamListener {
     {
         try
         {
-            if (webcam2 != null && webcam2.isOpen()){
-                try{
-                    webcam2.removeWebcamListener(Main.this);
-                }catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-                webcam2.close();
-            }
             closeAllCameras();
 
             List<Webcam> webcams = Webcam.getWebcams();
@@ -669,6 +654,9 @@ public class Main extends Application implements WebcamListener {
                 Random random = new Random();
                 int randomIndex = random.nextInt(webcams.size()); // Get a random index
                 webcam2 = webcams.get(randomIndex); // Select the webcam at the random index
+            }
+            if (webcam2.isOpen()) {
+                webcam2.close();
             }
             comboBoxWebCams2.getSelectionModel().select(webcam2);
             if (webcam2 != null) {
@@ -824,9 +812,6 @@ public class Main extends Application implements WebcamListener {
                 sampleClient.publish(imageTopic, imageMessage);
                 System.out.println("Image message published");
             }
-
-            sampleClient.disconnect();
-            System.out.println("Disconnected");
         } catch (MqttException me) {
             System.out.println("Reason: " + me.getReasonCode());
             System.out.println("Message: " + me.getMessage());
@@ -834,6 +819,17 @@ public class Main extends Application implements WebcamListener {
             System.out.println("Cause: " + me.getCause());
             System.out.println("Exception: " + me);
             me.printStackTrace();
+        }finally {
+            try {
+                if (sampleClient != null)
+                {
+                    sampleClient.disconnect();
+                }
+                System.out.println("Disconnected");
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -866,9 +862,6 @@ public class Main extends Application implements WebcamListener {
                 sampleClient.publish(imageTopic, imageMessage);
                 System.out.println("Image2 message published");
             }
-
-            sampleClient.disconnect();
-            System.out.println("Disconnected");
         } catch (MqttException me) {
             System.out.println("Reason: " + me.getReasonCode());
             System.out.println("Message: " + me.getMessage());
@@ -876,6 +869,17 @@ public class Main extends Application implements WebcamListener {
             System.out.println("Cause: " + me.getCause());
             System.out.println("Exception: " + me);
             me.printStackTrace();
+        }finally {
+            try {
+                if (sampleClient != null)
+                {
+                    sampleClient.disconnect();
+                }
+                System.out.println("Disconnected");
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -902,9 +906,6 @@ public class Main extends Application implements WebcamListener {
                 sampleClient.publish(imageTopic, imageMessage);
                 System.out.println("Image message published");
             }
-
-            sampleClient.disconnect();
-            System.out.println("Disconnected");
         } catch (MqttException me) {
             System.out.println("Reason: " + me.getReasonCode());
             System.out.println("Message: " + me.getMessage());
@@ -912,6 +913,17 @@ public class Main extends Application implements WebcamListener {
             System.out.println("Cause: " + me.getCause());
             System.out.println("Exception: " + me);
             me.printStackTrace();
+        }finally {
+            try {
+                if (sampleClient != null)
+                {
+                    sampleClient.disconnect();
+                }
+                System.out.println("Disconnected");
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -938,9 +950,6 @@ public class Main extends Application implements WebcamListener {
                 sampleClient.publish(imageTopic, imageMessage);
                 System.out.println("Image2 message published");
             }
-
-            sampleClient.disconnect();
-            System.out.println("Disconnected");
         } catch (MqttException me) {
             System.out.println("Reason: " + me.getReasonCode());
             System.out.println("Message: " + me.getMessage());
@@ -948,6 +957,17 @@ public class Main extends Application implements WebcamListener {
             System.out.println("Cause: " + me.getCause());
             System.out.println("Exception: " + me);
             me.printStackTrace();
+        }finally {
+            try {
+                if (sampleClient != null)
+                {
+                    sampleClient.disconnect();
+                }
+                System.out.println("Disconnected");
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -1030,11 +1050,9 @@ public class Main extends Application implements WebcamListener {
         if(cameraToggle)
         {
             updateImageView();
-            //closeAllCameras();
         }else
         {
             updateImageView2();
-            //closeAllCameras();
         }
     }
 
