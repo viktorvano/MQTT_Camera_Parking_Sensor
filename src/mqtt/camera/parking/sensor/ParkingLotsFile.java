@@ -34,6 +34,25 @@ public class ParkingLotsFile {
         }
     }
 
+    public static void saveParkingLots2(ObservableList<ParkingLot> parkingLots)
+    {
+        try
+        {
+            String fileSeparator = System.getProperty("file.separator");
+            File file = new File("res" + fileSeparator + "parkingLots2.dat");
+            file.createNewFile();
+            FileOutputStream f = new FileOutputStream(file);
+            ObjectOutputStream o = new ObjectOutputStream(f);
+            for(int i=0; i<parkingLots.size(); i++)
+                o.writeObject(parkingLots.get(i));
+            o.close();
+            f.close();
+        }catch (Exception e)
+        {
+            System.out.println("Failed to create the \"parkingLots2.dat\" file.");
+        }
+    }
+
     public static ObservableList<ParkingLot> loadParkingLots()
     {
         ObservableList<ParkingLot> parkingLots = FXCollections.observableArrayList();
@@ -60,6 +79,36 @@ public class ParkingLotsFile {
         }catch (Exception e)
         {
             System.out.println("Failed to read the \"parkingLots.dat\" file.");
+        }
+        return parkingLots;
+    }
+
+    public static ObservableList<ParkingLot> loadParkingLots2()
+    {
+        ObservableList<ParkingLot> parkingLots = FXCollections.observableArrayList();
+        try
+        {
+            String fileSeparator = System.getProperty("file.separator");
+            FileInputStream fi = new FileInputStream("res" + fileSeparator + "parkingLots2.dat");
+            ObjectInputStream oi = new ObjectInputStream(fi);
+            Object object;
+            while(true)
+            {
+                try{
+                    object = oi.readObject();
+                }
+                catch(IOException e){
+                    break;
+                }
+                if(object != null)
+                    parkingLots.add((ParkingLot) object);
+            }
+
+            oi.close();
+            fi.close();
+        }catch (Exception e)
+        {
+            System.out.println("Failed to read the \"parkingLots2.dat\" file.");
         }
         return parkingLots;
     }

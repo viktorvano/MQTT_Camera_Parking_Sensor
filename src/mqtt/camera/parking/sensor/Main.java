@@ -40,25 +40,43 @@ import static mqtt.camera.parking.sensor.StringFile.*;
 
 public class Main extends Application implements WebcamListener {
     private Webcam webcam;
+    private Webcam webcam2;
     private BufferedImage bufferedImage;
+    private BufferedImage bufferedImage2;
     private Image image;
+    private Image image2;
     private ImageView imageView;
+    private ImageView imageView2;
     private int parkingCount = 0;
+    private int parkingCount2 = 0;
     private final ObservableList<PixelPlace> parkingLotPixels = FXCollections.observableArrayList();
+    private final ObservableList<PixelPlace> parkingLotPixels2 = FXCollections.observableArrayList();
     private final Button buttonClearPixelList = new Button();
+    private final Button buttonClearPixelList2 = new Button();
     private final Button buttonAddParkingLot = new Button();
+    private final Button buttonAddParkingLot2 = new Button();
     private final Button buttonRemoveLot = new Button();
+    private final Button buttonRemoveLot2 = new Button();
     private final TextField textFieldLotName = new TextField();
+    private final TextField textFieldLotName2 = new TextField();
     private final ObservableList<ParkingLot> parkingLots = FXCollections.observableArrayList();
+    private final ObservableList<ParkingLot> parkingLots2 = FXCollections.observableArrayList();
     private int lastParkingCount = -1;
+    private int lastParkingCount2 = -1;
     private int fiveSecIntervals = 0;
+    private int fiveSecIntervals2 = 0;
     private Label labelParkingCount;
+    private Label labelParkingCount2;
     private ListView<ParkingLot> listViewParkingLots;
+    private ListView<ParkingLot> listViewParkingLots2;
     private Timeline timeline;
     private MqttClient sampleClient;
     private MqttConnectOptions connOpts;
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
     private final ComboBox<Webcam> comboBoxWebCams = new ComboBox<>();
+    private final ComboBox<Webcam> comboBoxWebCams2 = new ComboBox<>();
+    private static ListView<PixelPlace> listViewLotPixels;
+    private static ListView<PixelPlace> listViewLotPixels2;
 
     public static void main(String[] args)
     {
@@ -69,6 +87,7 @@ public class Main extends Application implements WebcamListener {
     public void start(Stage primaryStage) {
         createDirectoryIfNotExist("res");
         parkingLots.setAll(loadParkingLots());
+        parkingLots2.setAll(loadParkingLots2());
 
         brokerAddress = loadStringFromFile("res" + fileSeparator + "mqtt_broker_address.txt", brokerAddress);
         clientId = loadStringFromFile("res" + fileSeparator + "mqtt_client_id.txt", clientId);
@@ -128,6 +147,32 @@ public class Main extends Application implements WebcamListener {
             }
         });
 
+        comboBoxWebCams2.getItems().addAll(webcams);
+        comboBoxWebCams2.setPromptText("Select Camera2");
+        comboBoxWebCams2.setLayoutX(10 + widthOffset2);
+        comboBoxWebCams2.setLayoutY(500);
+        comboBoxWebCams2.setOnAction(event -> {
+            if (webcam2 != null && webcam2.isOpen()) {
+                webcam2.removeWebcamListener(Main.this);
+                webcam2.close();
+            }
+
+            try
+            {
+                webcam2 = comboBoxWebCams2.getSelectionModel().getSelectedItem();
+                if (webcam2 != null) {
+                    webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                    webcam2.addWebcamListener(Main.this);
+                    webcam2.open();
+                    updateImageView2();
+                }
+            }catch (Exception e)
+            {
+                e.printStackTrace();
+                fixWebcamStream2();
+            }
+        });
+
         imageView = new ImageView();
         imageView.setImage(image);
         imageView.setLayoutX(6);
@@ -152,26 +197,71 @@ public class Main extends Application implements WebcamListener {
             }
         });
 
+        imageView2 = new ImageView();
+        imageView2.setImage(image2);
+        imageView2.setLayoutX(6 + widthOffset2);
+        imageView2.setLayoutY(6);
+
+        imageView2.setOnMouseClicked(event -> {
+            double x = event.getX();
+            double y = event.getY();
+            if (bufferedImage2 != null) {
+                int pixelX = (int) x;
+                int pixelY = (int) y;
+                if (pixelX < bufferedImage2.getWidth() && pixelY < bufferedImage2.getHeight()) {
+                    int rgb = bufferedImage2.getRGB(pixelX, pixelY);
+                    Color color = new Color(rgb);
+                    PixelPlace pixelPlace = new PixelPlace(pixelX, pixelY);
+                    parkingLotPixels2.add(pixelPlace);
+                    System.out.println("X: " + pixelX + ", Y: " + pixelY +
+                            ", Red: " + color.getRed() +
+                            ", Green: " + color.getGreen() +
+                            ", Blue: " + color.getBlue());
+                }
+            }
+        });
+
 
         labelParkingCount = new Label("Parking count: " + parkingCount);
         labelParkingCount.setLayoutX(420);
         labelParkingCount.setLayoutY(500);
         labelParkingCount.setFont(Font.font("Arial", 20));
 
-        ListView<PixelPlace> listViewLotPixels = new ListView<>(parkingLotPixels);
+        labelParkingCount2 = new Label("Parking count: " + parkingCount2);
+        labelParkingCount2.setLayoutX(420 + widthOffset2);
+        labelParkingCount2.setLayoutY(500);
+        labelParkingCount2.setFont(Font.font("Arial", 20));
+
+        listViewLotPixels = new ListView<>(parkingLotPixels);
         listViewLotPixels.setLayoutX(10);
         listViewLotPixels.setLayoutY(550);
         listViewLotPixels.setPrefSize(150, 130);
+
+        listViewLotPixels2 = new ListView<>(parkingLotPixels2);
+        listViewLotPixels2.setLayoutX(10 + widthOffset2);
+        listViewLotPixels2.setLayoutY(550);
+        listViewLotPixels2.setPrefSize(150, 130);
 
         listViewParkingLots = new ListView<>(parkingLots);
         listViewParkingLots.setLayoutX(420);
         listViewParkingLots.setLayoutY(550);
         listViewParkingLots.setPrefSize(150, 130);
 
+        listViewParkingLots2 = new ListView<>(parkingLots2);
+        listViewParkingLots2.setLayoutX(420 + widthOffset2);
+        listViewParkingLots2.setLayoutY(550);
+        listViewParkingLots2.setPrefSize(150, 130);
+
         // Listen for changes in the list to update the button's disabled state
         parkingLotPixels.addListener((ListChangeListener<PixelPlace>) change -> {
             buttonClearPixelList.setDisable(parkingLotPixels.isEmpty());
             toggleButtonAddParkingLot();
+        });
+
+        // Listen for changes in the list to update the button's disabled state
+        parkingLotPixels2.addListener((ListChangeListener<PixelPlace>) change -> {
+            buttonClearPixelList2.setDisable(parkingLotPixels2.isEmpty());
+            toggleButtonAddParkingLot2();
         });
 
         buttonClearPixelList.setText("Clear Pixel List");
@@ -181,6 +271,14 @@ public class Main extends Application implements WebcamListener {
             parkingLotPixels.clear();
         });
         buttonClearPixelList.setDisable(true);
+
+        buttonClearPixelList2.setText("Clear Pixel List");
+        buttonClearPixelList2.setLayoutX(170 + widthOffset2);
+        buttonClearPixelList2.setLayoutY(550);
+        buttonClearPixelList2.setOnAction(event -> {
+            parkingLotPixels2.clear();
+        });
+        buttonClearPixelList2.setDisable(true);
 
         buttonAddParkingLot.setText("Add Parking Lot =>");
         buttonAddParkingLot.setLayoutX(280);
@@ -204,6 +302,28 @@ public class Main extends Application implements WebcamListener {
         });
         buttonAddParkingLot.setDisable(true);
 
+        buttonAddParkingLot2.setText("Add Parking Lot =>");
+        buttonAddParkingLot2.setLayoutX(280 + widthOffset2);
+        buttonAddParkingLot2.setLayoutY(580);
+        buttonAddParkingLot2.setOnAction(event -> {
+            String parkingLotName = textFieldLotName2.getText();
+            ArrayList<PixelPlace> pixelPlaces = new ArrayList<>();
+            for(PixelPlace place : parkingLotPixels2)
+            {
+                pixelPlaces.add(new PixelPlace(place.x, place.y));
+            }
+
+            parkingLots2.add(new ParkingLot(parkingLotName, pixelPlaces));
+
+            FXCollections.sort(parkingLots2, Comparator.comparing(ParkingLot::getName));
+
+            saveParkingLots2(parkingLots2);
+
+            textFieldLotName2.setText("");
+            parkingLotPixels2.clear();
+        });
+        buttonAddParkingLot2.setDisable(true);
+
         buttonRemoveLot.setText("Remove\nParking\nLot");
         buttonRemoveLot.setLayoutX(580);
         buttonRemoveLot.setLayoutY(580);
@@ -219,6 +339,21 @@ public class Main extends Application implements WebcamListener {
             }
         });
 
+        buttonRemoveLot2.setText("Remove\nParking\nLot");
+        buttonRemoveLot2.setLayoutX(580 + widthOffset2);
+        buttonRemoveLot2.setLayoutY(580);
+        buttonRemoveLot2.setOnAction(event -> {
+            int index = listViewParkingLots2.getSelectionModel().getSelectedIndex();
+            if(index != -1)
+            {
+                parkingLots2.remove(index);
+
+                FXCollections.sort(parkingLots2, Comparator.comparing(ParkingLot::getName));
+
+                saveParkingLots2(parkingLots2);
+            }
+        });
+
         textFieldLotName.setLayoutX(170);
         textFieldLotName.setLayoutY(580);
         textFieldLotName.setPrefWidth(80);
@@ -226,18 +361,34 @@ public class Main extends Application implements WebcamListener {
             toggleButtonAddParkingLot();
         });
 
+        textFieldLotName2.setLayoutX(170 + widthOffset2);
+        textFieldLotName2.setLayoutY(580);
+        textFieldLotName2.setPrefWidth(80);
+        textFieldLotName2.textProperty().addListener(event -> {
+            toggleButtonAddParkingLot2();
+        });
+
         Pane pane = new Pane();
-        pane.setPrefSize(650, 700);
+        pane.setPrefSize(paneWidth, paneHeight);
         pane.setStyle("-fx-background-color: #7F7F7F");
         pane.getChildren().add(imageView);
+        pane.getChildren().add(imageView2);
         pane.getChildren().add(labelParkingCount);
+        pane.getChildren().add(labelParkingCount2);
         pane.getChildren().add(comboBoxWebCams);
+        pane.getChildren().add(comboBoxWebCams2);
         pane.getChildren().add(listViewLotPixels);
+        pane.getChildren().add(listViewLotPixels2);
         pane.getChildren().add(buttonClearPixelList);
+        pane.getChildren().add(buttonClearPixelList2);
         pane.getChildren().add(buttonAddParkingLot);
+        pane.getChildren().add(buttonAddParkingLot2);
         pane.getChildren().add(buttonRemoveLot);
+        pane.getChildren().add(buttonRemoveLot2);
         pane.getChildren().add(textFieldLotName);
+        pane.getChildren().add(textFieldLotName2);
         pane.getChildren().add(listViewParkingLots);
+        pane.getChildren().add(listViewParkingLots2);
         Scene scene = new Scene(pane);
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
@@ -252,6 +403,14 @@ public class Main extends Application implements WebcamListener {
             }
             else {
                 fixWebcamStream();
+            }
+
+            if(webcam2 != null && webcam2.isOpen())
+            {
+                checkParkingLots2();
+            }
+            else {
+                fixWebcamStream2();
             }
         }));
         timeline.setCycleCount(Timeline.INDEFINITE);
@@ -290,6 +449,36 @@ public class Main extends Application implements WebcamListener {
         }
     }
 
+    private void selectFirstRandomCamera2()
+    {
+        if (webcam2 != null && webcam2.isOpen()) {
+            webcam2.removeWebcamListener(Main.this);
+            webcam2.close();
+        }
+
+        try
+        {
+            List<Webcam> webcams = Webcam.getWebcams();
+            comboBoxWebCams2.getItems().clear();
+            comboBoxWebCams2.getItems().addAll(webcams);
+
+            Random random = new Random();
+            int randomIndex = random.nextInt(webcams.size()); // Get a random index
+            webcam2 = webcams.get(randomIndex); // Select the webcam at the random index
+            comboBoxWebCams2.getSelectionModel().select(webcam2);
+            if (webcam2 != null) {
+                webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                webcam2.addWebcamListener(Main.this);
+                webcam2.open();
+                updateImageView2();
+            }
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            fixWebcamStream2();
+        }
+    }
+
     private void fixWebcamStream()
     {
         try
@@ -311,6 +500,34 @@ public class Main extends Application implements WebcamListener {
                 webcam.setViewSize(WebcamResolution.VGA.getSize());
                 webcam.addWebcamListener(Main.this);
                 webcam.open();
+            }
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private void fixWebcamStream2()
+    {
+        try
+        {
+            if (webcam2 != null && webcam2.isOpen()){
+                webcam2.removeWebcamListener(Main.this);
+                webcam2.close();
+            }
+
+            List<Webcam> webcams = Webcam.getWebcams();
+            comboBoxWebCams2.getItems().clear();
+            comboBoxWebCams2.getItems().addAll(webcams);
+
+            Random random = new Random();
+            int randomIndex = random.nextInt(webcams.size()); // Get a random index
+            webcam2 = webcams.get(randomIndex); // Select the webcam at the random index
+            comboBoxWebCams2.getSelectionModel().select(webcam2);
+            if (webcam2 != null) {
+                webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                webcam2.addWebcamListener(Main.this);
+                webcam2.open();
             }
         }catch (Exception e)
         {
@@ -348,6 +565,41 @@ public class Main extends Application implements WebcamListener {
                 fiveSecIntervals = 0;
                 System.out.println("Sending Image only via MQTT.");
                 publishImageViaMQTT();
+                System.gc();
+            }
+        }
+    }
+
+    private void checkParkingLots2()
+    {
+        if(bufferedImage2 != null)
+        {
+            parkingCount2 = 0;
+            for(ParkingLot parkingLot : parkingLots2)
+            {
+                parkingLot.calculateIfParkingLotIsFree(bufferedImage2, greyTolerance, blackThreshold, whiteThreshold);
+                if(parkingLot.isFree())
+                {
+                    parkingCount2++;
+                }
+            }
+
+            labelParkingCount2.setText("Parking count: " + parkingCount2);
+            listViewParkingLots2.refresh();
+
+            if(parkingCount2 != lastParkingCount2)
+            {
+                publishMQTT2();
+                lastParkingCount2 = parkingCount2;
+                fiveSecIntervals2 = 0;
+            }
+
+            fiveSecIntervals2++;
+            if(fiveSecIntervals2 >= 3)
+            {
+                fiveSecIntervals2 = 0;
+                System.out.println("Sending Image only via MQTT.");
+                publishImageViaMQTT2();
                 System.gc();
             }
         }
@@ -434,6 +686,48 @@ public class Main extends Application implements WebcamListener {
         }
     }
 
+    private void publishMQTT2()
+    {
+        int value = parkingCount2;
+        int qos = 2;
+
+        try {
+            if (sampleClient == null || !sampleClient.isConnected()) {
+                initializeMQTTClient();
+            }
+
+            System.out.println("Connecting to broker: " + brokerAddress);
+            sampleClient.connect(connOpts);
+            System.out.println("Connected");
+
+            String content = Integer.toString(value); // Convert the integer value to string
+            MqttMessage message = new MqttMessage(content.getBytes());
+            message.setQos(qos);
+            sampleClient.publish(mqtt_sensor_topic2, message);
+            System.out.println("Message published");
+
+            // Publish image as Base64
+            if (bufferedImage2 != null) {
+                String base64Image = encodeImageToBase64(bufferedImage2);
+                String imageTopic = mqtt_image_topic2;
+                MqttMessage imageMessage = new MqttMessage(base64Image.getBytes());
+                imageMessage.setQos(qos);
+                sampleClient.publish(imageTopic, imageMessage);
+                System.out.println("Image message published");
+            }
+
+            sampleClient.disconnect();
+            System.out.println("Disconnected");
+        } catch (MqttException me) {
+            System.out.println("Reason: " + me.getReasonCode());
+            System.out.println("Message: " + me.getMessage());
+            System.out.println("Localized: " + me.getLocalizedMessage());
+            System.out.println("Cause: " + me.getCause());
+            System.out.println("Exception: " + me);
+            me.printStackTrace();
+        }
+    }
+
     private void publishImageViaMQTT()
     {
         int value = parkingCount;
@@ -470,9 +764,50 @@ public class Main extends Application implements WebcamListener {
         }
     }
 
+    private void publishImageViaMQTT2()
+    {
+        int value = parkingCount2;
+        int qos = 2;
+
+        try {
+            if (sampleClient == null || !sampleClient.isConnected()) {
+                initializeMQTTClient();
+            }
+
+            System.out.println("Connecting to broker: " + brokerAddress);
+            sampleClient.connect(connOpts);
+            System.out.println("Connected");
+
+            // Publish image as Base64
+            if (bufferedImage2 != null) {
+                String base64Image = encodeImageToBase64(bufferedImage2);
+                String imageTopic = mqtt_image_topic2;
+                MqttMessage imageMessage = new MqttMessage(base64Image.getBytes());
+                imageMessage.setQos(qos);
+                sampleClient.publish(imageTopic, imageMessage);
+                System.out.println("Image message published");
+            }
+
+            sampleClient.disconnect();
+            System.out.println("Disconnected");
+        } catch (MqttException me) {
+            System.out.println("Reason: " + me.getReasonCode());
+            System.out.println("Message: " + me.getMessage());
+            System.out.println("Localized: " + me.getLocalizedMessage());
+            System.out.println("Cause: " + me.getCause());
+            System.out.println("Exception: " + me);
+            me.printStackTrace();
+        }
+    }
+
     private void toggleButtonAddParkingLot()
     {
         buttonAddParkingLot.setDisable(parkingLotPixels.isEmpty() || textFieldLotName.getText().isEmpty());
+    }
+
+    private void toggleButtonAddParkingLot2()
+    {
+        buttonAddParkingLot2.setDisable(parkingLotPixels2.isEmpty() || textFieldLotName2.getText().isEmpty());
     }
 
     private void updateImageView() {
@@ -491,6 +826,22 @@ public class Main extends Application implements WebcamListener {
         }
     }
 
+    private void updateImageView2() {
+        if (bufferedImage2 != null) {
+            bufferedImage2.flush(); // Release previous image resources
+        }
+
+        if(webcam2 != null && webcam2.isOpen())
+        {
+            bufferedImage2 = webcam2.getImage();
+            image2 = SwingFXUtils.toFXImage(bufferedImage2, null);
+            imageView2.setImage(image2);
+        }else
+        {
+            fixWebcamStream2();
+        }
+    }
+
     @Override
     public void stop() throws Exception {
         super.stop();
@@ -500,6 +851,10 @@ public class Main extends Application implements WebcamListener {
         if (webcam != null && webcam.isOpen()) {
             webcam.removeWebcamListener(Main.this);
             webcam.close();
+        }
+        if (webcam2 != null && webcam2.isOpen()) {
+            webcam2.removeWebcamListener(Main.this);
+            webcam2.close();
         }
         System.out.println("Closing Application.");
     }
@@ -522,6 +877,7 @@ public class Main extends Application implements WebcamListener {
     @Override
     public void webcamImageObtained(WebcamEvent webcamEvent) {
         updateImageView();
+        updateImageView2();
     }
 
     private void setMonochromatic(BufferedImage bufferedImageMono)
