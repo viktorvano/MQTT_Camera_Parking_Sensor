@@ -142,7 +142,7 @@ public class Main extends Application implements WebcamListener {
                 webcam = comboBoxWebCams.getSelectionModel().getSelectedItem();
                 if (webcam != null) {
                     saveStringToFile("res" + fileSeparator + "camera1.txt", webcam.getName());
-                    closeTheOtherCamera();
+                    closeAllCameras();
                     webcam.setViewSize(WebcamResolution.VGA.getSize());
                     webcam.addWebcamListener(Main.this);
                     webcam.open();
@@ -170,7 +170,7 @@ public class Main extends Application implements WebcamListener {
                 webcam2 = comboBoxWebCams2.getSelectionModel().getSelectedItem();
                 if (webcam2 != null) {
                     saveStringToFile("res" + fileSeparator + "camera2.txt", webcam2.getName());
-                    closeTheOtherCamera();
+                    closeAllCameras();
                     webcam2.setViewSize(WebcamResolution.VGA.getSize());
                     webcam2.addWebcamListener(Main.this);
                     webcam2.open();
@@ -407,7 +407,7 @@ public class Main extends Application implements WebcamListener {
         primaryStage.show();
 
         timeline = new Timeline(new KeyFrame(Duration.millis(5000), event -> {
-            closeTheOtherCamera();
+            keepOneCameraOpen();
 
             if(cameraToggle && webcam != null)
             {
@@ -452,6 +452,7 @@ public class Main extends Application implements WebcamListener {
 
         selectFirstRandomCamera();
         selectFirstRandomCamera2();
+        keepOneCameraOpen();
     }
 
     private void selectFirstRandomCamera()
@@ -486,10 +487,12 @@ public class Main extends Application implements WebcamListener {
             }
             comboBoxWebCams.getSelectionModel().select(webcam);
             if (webcam != null) {
+                closeAllCameras();
                 webcam.setViewSize(WebcamResolution.VGA.getSize());
                 webcam.addWebcamListener(Main.this);
                 webcam.open();
                 updateImageView();
+                closeAllCameras();
             }
         }catch (Exception e)
         {
@@ -530,10 +533,12 @@ public class Main extends Application implements WebcamListener {
             }
             comboBoxWebCams2.getSelectionModel().select(webcam2);
             if (webcam2 != null) {
+                closeAllCameras();
                 webcam2.setViewSize(WebcamResolution.VGA.getSize());
                 webcam2.addWebcamListener(Main.this);
                 webcam2.open();
                 updateImageView2();
+                closeAllCameras();
             }
         }catch (Exception e)
         {
@@ -574,6 +579,7 @@ public class Main extends Application implements WebcamListener {
             }
             comboBoxWebCams.getSelectionModel().select(webcam);
             if (webcam != null) {
+                closeAllCameras();
                 webcam.setViewSize(WebcamResolution.VGA.getSize());
                 webcam.addWebcamListener(Main.this);
                 webcam.open();
@@ -616,6 +622,7 @@ public class Main extends Application implements WebcamListener {
             }
             comboBoxWebCams2.getSelectionModel().select(webcam2);
             if (webcam2 != null) {
+                closeAllCameras();
                 webcam2.setViewSize(WebcamResolution.VGA.getSize());
                 webcam2.addWebcamListener(Main.this);
                 webcam2.open();
@@ -1004,7 +1011,20 @@ public class Main extends Application implements WebcamListener {
         return bufferedImageReturn;
     }
 
-    private void closeTheOtherCamera()
+    private void closeAllCameras()
+    {
+        if(webcam != null && webcam.isOpen())
+        {
+            webcam.close();
+        }
+
+        if(webcam2 != null && webcam2.isOpen())
+        {
+            webcam2.close();
+        }
+    }
+
+    private void keepOneCameraOpen()
     {
         if(cameraToggle)
         {
