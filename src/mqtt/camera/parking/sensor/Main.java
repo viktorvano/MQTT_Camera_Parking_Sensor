@@ -143,9 +143,15 @@ public class Main extends Application implements WebcamListener {
                 if (webcam != null) {
                     saveStringToFile("res" + fileSeparator + "camera1.txt", webcam.getName());
                     closeAllCameras();
-                    webcam.setViewSize(WebcamResolution.VGA.getSize());
+                    try{
+                        webcam.setViewSize(WebcamResolution.VGA.getSize());
+                    }catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
                     webcam.addWebcamListener(Main.this);
-                    webcam.open();
+                    cameraToggle = true;
+                    keepOneCameraOpen();
                     updateImageView();
                 }
             }catch (Exception e)
@@ -171,9 +177,15 @@ public class Main extends Application implements WebcamListener {
                 if (webcam2 != null) {
                     saveStringToFile("res" + fileSeparator + "camera2.txt", webcam2.getName());
                     closeAllCameras();
-                    webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                    try{
+                        webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                    }catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
                     webcam2.addWebcamListener(Main.this);
-                    webcam2.open();
+                    cameraToggle = false;
+                    keepOneCameraOpen();
                     updateImageView2();
                 }
             }catch (Exception e)
@@ -407,6 +419,10 @@ public class Main extends Application implements WebcamListener {
         primaryStage.show();
 
         timeline = new Timeline(new KeyFrame(Duration.millis(5000), event -> {
+
+            cameraToggle = !cameraToggle;
+            keepOneCameraOpen();
+
             if(cameraToggle && webcam != null)
             {
                 if(!webcam.isOpen())
@@ -419,11 +435,13 @@ public class Main extends Application implements WebcamListener {
                         e.printStackTrace();
                     }
                 }
+                else
+                {
+                    fixWebcamStream();
+                }
                 checkParkingLots();
             }
-            else {
-                fixWebcamStream();
-            }
+
 
             if(!cameraToggle && webcam2 != null)
             {
@@ -437,13 +455,12 @@ public class Main extends Application implements WebcamListener {
                         e.printStackTrace();
                     }
                 }
+                else
+                {
+                    fixWebcamStream2();
+                }
                 checkParkingLots2();
             }
-            else {
-                fixWebcamStream2();
-            }
-
-            cameraToggle = !cameraToggle;
         }));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
@@ -485,11 +502,15 @@ public class Main extends Application implements WebcamListener {
             comboBoxWebCams.getSelectionModel().select(webcam);
             if (webcam != null) {
                 closeAllCameras();
-                webcam.setViewSize(WebcamResolution.VGA.getSize());
+                try{
+                    webcam.setViewSize(WebcamResolution.VGA.getSize());
+                }catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
                 webcam.addWebcamListener(Main.this);
-                webcam.open();
+                keepOneCameraOpen();
                 updateImageView();
-                closeAllCameras();
             }
         }catch (Exception e)
         {
@@ -531,11 +552,15 @@ public class Main extends Application implements WebcamListener {
             comboBoxWebCams2.getSelectionModel().select(webcam2);
             if (webcam2 != null) {
                 closeAllCameras();
-                webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                try{
+                    webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                }catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
                 webcam2.addWebcamListener(Main.this);
-                webcam2.open();
+                keepOneCameraOpen();
                 updateImageView2();
-                closeAllCameras();
             }
         }catch (Exception e)
         {
@@ -577,9 +602,14 @@ public class Main extends Application implements WebcamListener {
             comboBoxWebCams.getSelectionModel().select(webcam);
             if (webcam != null) {
                 closeAllCameras();
-                webcam.setViewSize(WebcamResolution.VGA.getSize());
+                try{
+                    webcam.setViewSize(WebcamResolution.VGA.getSize());
+                }catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
                 webcam.addWebcamListener(Main.this);
-                webcam.open();
+                keepOneCameraOpen();
             }
         }catch (Exception e)
         {
@@ -620,9 +650,14 @@ public class Main extends Application implements WebcamListener {
             comboBoxWebCams2.getSelectionModel().select(webcam2);
             if (webcam2 != null) {
                 closeAllCameras();
-                webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                try{
+                    webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                }catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
                 webcam2.addWebcamListener(Main.this);
-                webcam2.open();
+                keepOneCameraOpen();
             }
         }catch (Exception e)
         {
@@ -911,8 +946,7 @@ public class Main extends Application implements WebcamListener {
             if (bufferedImage != null) {
                 bufferedImage.flush(); // Release previous image resources
             }
-            closeAllCameras();
-            webcam.open();
+            keepOneCameraOpen();
             bufferedImage = webcam.getImage();
             image = SwingFXUtils.toFXImage(bufferedImage, null);
             imageView.setImage(image);
@@ -928,8 +962,7 @@ public class Main extends Application implements WebcamListener {
             if (bufferedImage2 != null) {
                 bufferedImage2.flush(); // Release previous image resources
             }
-            closeAllCameras();
-            webcam2.open();
+            keepOneCameraOpen();
             bufferedImage2 = webcam2.getImage();
             image2 = SwingFXUtils.toFXImage(bufferedImage2, null);
             imageView2.setImage(image2);
@@ -976,11 +1009,11 @@ public class Main extends Application implements WebcamListener {
         if(cameraToggle)
         {
             updateImageView();
-            closeAllCameras();
+            //closeAllCameras();
         }else
         {
             updateImageView2();
-            closeAllCameras();
+            //closeAllCameras();
         }
     }
 
