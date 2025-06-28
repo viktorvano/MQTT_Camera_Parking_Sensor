@@ -417,6 +417,7 @@ public class Main extends Application implements WebcamListener {
         timeline.play();
 
         selectFirstRandomCamera();
+        selectFirstRandomCamera2();
     }
 
     private void selectFirstRandomCamera()
