@@ -407,8 +407,6 @@ public class Main extends Application implements WebcamListener {
         primaryStage.show();
 
         timeline = new Timeline(new KeyFrame(Duration.millis(5000), event -> {
-            keepOneCameraOpen();
-
             if(cameraToggle && webcam != null)
             {
                 if(!webcam.isOpen())
@@ -452,7 +450,6 @@ public class Main extends Application implements WebcamListener {
 
         selectFirstRandomCamera();
         selectFirstRandomCamera2();
-        keepOneCameraOpen();
     }
 
     private void selectFirstRandomCamera()
@@ -802,7 +799,7 @@ public class Main extends Application implements WebcamListener {
             MqttMessage message = new MqttMessage(content.getBytes());
             message.setQos(qos);
             sampleClient.publish(mqtt_sensor_topic2, message);
-            System.out.println("Message published");
+            System.out.println("Message2 published");
 
             // Publish image as Base64
             if (bufferedImage2 != null) {
@@ -811,7 +808,7 @@ public class Main extends Application implements WebcamListener {
                 MqttMessage imageMessage = new MqttMessage(base64Image.getBytes());
                 imageMessage.setQos(qos);
                 sampleClient.publish(imageTopic, imageMessage);
-                System.out.println("Image message published");
+                System.out.println("Image2 message published");
             }
 
             sampleClient.disconnect();
@@ -883,7 +880,7 @@ public class Main extends Application implements WebcamListener {
                 MqttMessage imageMessage = new MqttMessage(base64Image.getBytes());
                 imageMessage.setQos(qos);
                 sampleClient.publish(imageTopic, imageMessage);
-                System.out.println("Image message published");
+                System.out.println("Image2 message published");
             }
 
             sampleClient.disconnect();
@@ -909,12 +906,13 @@ public class Main extends Application implements WebcamListener {
     }
 
     private void updateImageView() {
-        if (bufferedImage != null) {
-            bufferedImage.flush(); // Release previous image resources
-        }
-
-        if(webcam != null && webcam.isOpen())
+        if(webcam != null)
         {
+            if (bufferedImage != null) {
+                bufferedImage.flush(); // Release previous image resources
+            }
+            closeAllCameras();
+            webcam.open();
             bufferedImage = webcam.getImage();
             image = SwingFXUtils.toFXImage(bufferedImage, null);
             imageView.setImage(image);
@@ -925,12 +923,13 @@ public class Main extends Application implements WebcamListener {
     }
 
     private void updateImageView2() {
-        if (bufferedImage2 != null) {
-            bufferedImage2.flush(); // Release previous image resources
-        }
-
-        if(webcam2 != null && webcam2.isOpen())
+        if(webcam2 != null)
         {
+            if (bufferedImage2 != null) {
+                bufferedImage2.flush(); // Release previous image resources
+            }
+            closeAllCameras();
+            webcam2.open();
             bufferedImage2 = webcam2.getImage();
             image2 = SwingFXUtils.toFXImage(bufferedImage2, null);
             imageView2.setImage(image2);
@@ -977,9 +976,11 @@ public class Main extends Application implements WebcamListener {
         if(cameraToggle)
         {
             updateImageView();
+            closeAllCameras();
         }else
         {
             updateImageView2();
+            closeAllCameras();
         }
     }
 
