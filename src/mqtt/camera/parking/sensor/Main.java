@@ -92,9 +92,9 @@ public class Main extends Application implements WebcamListener {
         brokerAddress = loadStringFromFile("res" + fileSeparator + "mqtt_broker_address.txt", brokerAddress);
         clientId = loadStringFromFile("res" + fileSeparator + "mqtt_client_id.txt", clientId);
         mqtt_sensor_topic = loadStringFromFile("res" + fileSeparator + "mqtt_sensor_topic.txt", mqtt_sensor_topic);
-        mqtt_sensor_topic2 = loadStringFromFile("res" + fileSeparator + "mqtt_sensor_topic.txt", mqtt_sensor_topic2);
+        mqtt_sensor_topic2 = loadStringFromFile("res" + fileSeparator + "mqtt_sensor_topic2.txt", mqtt_sensor_topic2);
         mqtt_image_topic = loadStringFromFile("res" + fileSeparator + "mqtt_image_topic.txt", mqtt_image_topic);
-        mqtt_image_topic2 = loadStringFromFile("res" + fileSeparator + "mqtt_image_topic.txt", mqtt_image_topic2);
+        mqtt_image_topic2 = loadStringFromFile("res" + fileSeparator + "mqtt_image_topic2.txt", mqtt_image_topic2);
         username = loadStringFromFile("res" + fileSeparator + "mqtt_username.txt", username);
         password = loadStringFromFile("res" + fileSeparator + "mqtt_password.txt", password);
         cameraName = loadStringFromFile("res" + fileSeparator + "camera1.txt", cameraName);
