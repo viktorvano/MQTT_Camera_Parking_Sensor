@@ -146,7 +146,10 @@ public class Main extends Application implements WebcamListener {
                     saveStringToFile("res" + fileSeparator + "camera1.txt", webcam.getName());
                     closeAllCameras();
                     try{
-                        webcam.setViewSize(WebcamResolution.VGA.getSize());
+                        if(!webcam.getViewSize().equals(WebcamResolution.VGA.getSize()))
+                        {
+                            webcam.setViewSize(WebcamResolution.VGA.getSize());
+                        }
                     }catch (Exception e)
                     {
                         e.printStackTrace();
@@ -183,7 +186,10 @@ public class Main extends Application implements WebcamListener {
                     saveStringToFile("res" + fileSeparator + "camera2.txt", webcam2.getName());
                     closeAllCameras();
                     try{
-                        webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                        if(!webcam2.getViewSize().equals(WebcamResolution.VGA.getSize()))
+                        {
+                            webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                        }
                     }catch (Exception e)
                     {
                         e.printStackTrace();
@@ -511,7 +517,10 @@ public class Main extends Application implements WebcamListener {
             if (webcam != null) {
                 closeAllCameras();
                 try{
-                    webcam.setViewSize(WebcamResolution.VGA.getSize());
+                    if(!webcam.getViewSize().equals(WebcamResolution.VGA.getSize()))
+                    {
+                        webcam.setViewSize(WebcamResolution.VGA.getSize());
+                    }
                 }catch (Exception e)
                 {
                     e.printStackTrace();
@@ -565,7 +574,10 @@ public class Main extends Application implements WebcamListener {
             if (webcam2 != null) {
                 closeAllCameras();
                 try{
-                    webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                    if(!webcam2.getViewSize().equals(WebcamResolution.VGA.getSize()))
+                    {
+                        webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                    }
                 }catch (Exception e)
                 {
                     e.printStackTrace();
@@ -623,7 +635,10 @@ public class Main extends Application implements WebcamListener {
             comboBoxWebCams.getSelectionModel().select(webcam);
             if (webcam != null) {
                 try{
-                    webcam.setViewSize(WebcamResolution.VGA.getSize());
+                    if(!webcam.getViewSize().equals(WebcamResolution.VGA.getSize()))
+                    {
+                        webcam.setViewSize(WebcamResolution.VGA.getSize());
+                    }
                 }catch (Exception e)
                 {
                     e.printStackTrace();
@@ -679,7 +694,10 @@ public class Main extends Application implements WebcamListener {
             comboBoxWebCams2.getSelectionModel().select(webcam2);
             if (webcam2 != null) {
                 try{
-                    webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                    if(!webcam2.getViewSize().equals(WebcamResolution.VGA.getSize()))
+                    {
+                        webcam2.setViewSize(WebcamResolution.VGA.getSize());
+                    }
                 }catch (Exception e)
                 {
                     e.printStackTrace();
