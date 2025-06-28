@@ -791,6 +791,7 @@ public class Main extends Application implements WebcamListener {
         connOpts.setCleanSession(true);
         connOpts.setUserName(username);
         connOpts.setPassword(password.toCharArray());
+        connOpts.setAutomaticReconnect(true);
     }
 
     private void publishMQTT()
