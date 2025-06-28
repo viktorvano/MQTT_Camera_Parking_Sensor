@@ -142,6 +142,7 @@ public class Main extends Application implements WebcamListener {
                 webcam = comboBoxWebCams.getSelectionModel().getSelectedItem();
                 if (webcam != null) {
                     saveStringToFile("res" + fileSeparator + "camera1.txt", webcam.getName());
+                    closeTheOtherCamera();
                     webcam.setViewSize(WebcamResolution.VGA.getSize());
                     webcam.addWebcamListener(Main.this);
                     webcam.open();
@@ -169,6 +170,7 @@ public class Main extends Application implements WebcamListener {
                 webcam2 = comboBoxWebCams2.getSelectionModel().getSelectedItem();
                 if (webcam2 != null) {
                     saveStringToFile("res" + fileSeparator + "camera2.txt", webcam2.getName());
+                    closeTheOtherCamera();
                     webcam2.setViewSize(WebcamResolution.VGA.getSize());
                     webcam2.addWebcamListener(Main.this);
                     webcam2.open();
@@ -405,6 +407,8 @@ public class Main extends Application implements WebcamListener {
         primaryStage.show();
 
         timeline = new Timeline(new KeyFrame(Duration.millis(5000), event -> {
+            closeTheOtherCamera();
+
             if(cameraToggle && webcam != null)
             {
                 if(!webcam.isOpen())
@@ -431,7 +435,7 @@ public class Main extends Application implements WebcamListener {
                         webcam2.open();
                     }catch (Exception e)
                     {
-                        System.out.println("Cannot Open Camera1 in Timeline.");
+                        System.out.println("Cannot Open Camera2 in Timeline.");
                         e.printStackTrace();
                     }
                 }
@@ -998,5 +1002,32 @@ public class Main extends Application implements WebcamListener {
                 bufferedImageReturn.setRGB(width, height, color);
             }
         return bufferedImageReturn;
+    }
+
+    private void closeTheOtherCamera()
+    {
+        if(cameraToggle)
+        {
+            if(webcam2 != null && webcam2.isOpen())
+            {
+                webcam2.close();
+            }
+
+            if(webcam != null && !webcam.isOpen())
+            {
+                webcam.open();
+            }
+        }else
+        {
+            if(webcam != null && webcam.isOpen())
+            {
+                webcam.close();
+            }
+
+            if(webcam2 != null && !webcam2.isOpen())
+            {
+                webcam2.open();
+            }
+        }
     }
 }
