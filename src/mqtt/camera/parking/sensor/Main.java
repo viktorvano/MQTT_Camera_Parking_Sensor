@@ -24,6 +24,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.control.Label;
 import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -765,7 +766,7 @@ public class Main extends Application implements WebcamListener {
     }
 
     private void initializeMQTTClient() throws MqttException {
-        mqttClient = new MqttClient(brokerAddress, clientId);
+        mqttClient = new MqttClient(brokerAddress, clientId, new MemoryPersistence());
         mqttClient.setCallback(new MqttCallback() {
             @Override
             public void connectionLost(Throwable cause) {
