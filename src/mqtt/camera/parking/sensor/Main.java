@@ -78,6 +78,10 @@ public class Main extends Application implements WebcamListener {
     private static ListView<PixelPlace> listViewLotPixels;
     private static ListView<PixelPlace> listViewLotPixels2;
 
+    private static boolean cameraToggle = false;
+    private static String cameraName = "camera 1";
+    private static String cameraName2 = "camera 2";
+
     public static void main(String[] args)
     {
         launch(args);
@@ -95,6 +99,8 @@ public class Main extends Application implements WebcamListener {
         mqtt_image_topic = loadStringFromFile("res" + fileSeparator + "mqtt_image_topic.txt", mqtt_image_topic);
         username = loadStringFromFile("res" + fileSeparator + "mqtt_username.txt", username);
         password = loadStringFromFile("res" + fileSeparator + "mqtt_password.txt", password);
+        cameraName = loadStringFromFile("res" + fileSeparator + "camera1.txt", cameraName);
+        cameraName2 = loadStringFromFile("res" + fileSeparator + "camera2.txt", cameraName2);
 
         logger.info("Application started.");
 
@@ -135,6 +141,7 @@ public class Main extends Application implements WebcamListener {
             {
                 webcam = comboBoxWebCams.getSelectionModel().getSelectedItem();
                 if (webcam != null) {
+                    saveStringToFile("res" + fileSeparator + "camera1.txt", webcam.getName());
                     webcam.setViewSize(WebcamResolution.VGA.getSize());
                     webcam.addWebcamListener(Main.this);
                     webcam.open();
@@ -161,6 +168,7 @@ public class Main extends Application implements WebcamListener {
             {
                 webcam2 = comboBoxWebCams2.getSelectionModel().getSelectedItem();
                 if (webcam2 != null) {
+                    saveStringToFile("res" + fileSeparator + "camera2.txt", webcam2.getName());
                     webcam2.setViewSize(WebcamResolution.VGA.getSize());
                     webcam2.addWebcamListener(Main.this);
                     webcam2.open();
@@ -397,21 +405,43 @@ public class Main extends Application implements WebcamListener {
         primaryStage.show();
 
         timeline = new Timeline(new KeyFrame(Duration.millis(5000), event -> {
-            if(webcam != null && webcam.isOpen())
+            if(cameraToggle && webcam != null)
             {
+                if(!webcam.isOpen())
+                {
+                    try {
+                        webcam.open();
+                    }catch (Exception e)
+                    {
+                        System.out.println("Cannot Open Camera1 in Timeline.");
+                        e.printStackTrace();
+                    }
+                }
                 checkParkingLots();
             }
             else {
                 fixWebcamStream();
             }
 
-            if(webcam2 != null && webcam2.isOpen())
+            if(!cameraToggle && webcam2 != null)
             {
+                if(!webcam2.isOpen())
+                {
+                    try {
+                        webcam2.open();
+                    }catch (Exception e)
+                    {
+                        System.out.println("Cannot Open Camera1 in Timeline.");
+                        e.printStackTrace();
+                    }
+                }
                 checkParkingLots2();
             }
             else {
                 fixWebcamStream2();
             }
+
+            cameraToggle = !cameraToggle;
         }));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
@@ -433,9 +463,23 @@ public class Main extends Application implements WebcamListener {
             comboBoxWebCams.getItems().clear();
             comboBoxWebCams.getItems().addAll(webcams);
 
-            Random random = new Random();
-            int randomIndex = random.nextInt(webcams.size()); // Get a random index
-            webcam = webcams.get(randomIndex); // Select the webcam at the random index
+            int cameraIndex = -1;
+            for(int i=0; i< webcams.size(); i++)
+            {
+                if(webcams.get(i).getName().equals(cameraName))
+                {
+                    cameraIndex = i;
+                    break;
+                }
+            }
+            if(cameraIndex != -1)
+            {
+                webcam = webcams.get(cameraIndex); // Select the webcam at the specific index
+            }else{
+                Random random = new Random();
+                int randomIndex = random.nextInt(webcams.size()); // Get a random index
+                webcam = webcams.get(randomIndex); // Select the webcam at the random index
+            }
             comboBoxWebCams.getSelectionModel().select(webcam);
             if (webcam != null) {
                 webcam.setViewSize(WebcamResolution.VGA.getSize());
@@ -463,9 +507,23 @@ public class Main extends Application implements WebcamListener {
             comboBoxWebCams2.getItems().clear();
             comboBoxWebCams2.getItems().addAll(webcams);
 
-            Random random = new Random();
-            int randomIndex = random.nextInt(webcams.size()); // Get a random index
-            webcam2 = webcams.get(randomIndex); // Select the webcam at the random index
+            int cameraIndex = -1;
+            for(int i=0; i< webcams.size(); i++)
+            {
+                if(webcams.get(i).getName().equals(cameraName2))
+                {
+                    cameraIndex = i;
+                    break;
+                }
+            }
+            if(cameraIndex != -1)
+            {
+                webcam2 = webcams.get(cameraIndex); // Select the webcam at the specific index
+            }else{
+                Random random = new Random();
+                int randomIndex = random.nextInt(webcams.size()); // Get a random index
+                webcam2 = webcams.get(randomIndex); // Select the webcam at the random index
+            }
             comboBoxWebCams2.getSelectionModel().select(webcam2);
             if (webcam2 != null) {
                 webcam2.setViewSize(WebcamResolution.VGA.getSize());
@@ -493,9 +551,23 @@ public class Main extends Application implements WebcamListener {
             comboBoxWebCams.getItems().clear();
             comboBoxWebCams.getItems().addAll(webcams);
 
-            Random random = new Random();
-            int randomIndex = random.nextInt(webcams.size()); // Get a random index
-            webcam = webcams.get(randomIndex); // Select the webcam at the random index
+            int cameraIndex = -1;
+            for(int i=0; i< webcams.size(); i++)
+            {
+                if(webcams.get(i).getName().equals(cameraName))
+                {
+                    cameraIndex = i;
+                    break;
+                }
+            }
+            if(cameraIndex != -1)
+            {
+                webcam = webcams.get(cameraIndex); // Select the webcam at the specific index
+            }else{
+                Random random = new Random();
+                int randomIndex = random.nextInt(webcams.size()); // Get a random index
+                webcam = webcams.get(randomIndex); // Select the webcam at the random index
+            }
             comboBoxWebCams.getSelectionModel().select(webcam);
             if (webcam != null) {
                 webcam.setViewSize(WebcamResolution.VGA.getSize());
@@ -521,9 +593,23 @@ public class Main extends Application implements WebcamListener {
             comboBoxWebCams2.getItems().clear();
             comboBoxWebCams2.getItems().addAll(webcams);
 
-            Random random = new Random();
-            int randomIndex = random.nextInt(webcams.size()); // Get a random index
-            webcam2 = webcams.get(randomIndex); // Select the webcam at the random index
+            int cameraIndex = -1;
+            for(int i=0; i< webcams.size(); i++)
+            {
+                if(webcams.get(i).getName().equals(cameraName2))
+                {
+                    cameraIndex = i;
+                    break;
+                }
+            }
+            if(cameraIndex != -1)
+            {
+                webcam2 = webcams.get(cameraIndex); // Select the webcam at the specific index
+            }else{
+                Random random = new Random();
+                int randomIndex = random.nextInt(webcams.size()); // Get a random index
+                webcam2 = webcams.get(randomIndex); // Select the webcam at the random index
+            }
             comboBoxWebCams2.getSelectionModel().select(webcam2);
             if (webcam2 != null) {
                 webcam2.setViewSize(WebcamResolution.VGA.getSize());
@@ -877,8 +963,13 @@ public class Main extends Application implements WebcamListener {
 
     @Override
     public void webcamImageObtained(WebcamEvent webcamEvent) {
-        updateImageView();
-        updateImageView2();
+        if(cameraToggle)
+        {
+            updateImageView();
+        }else
+        {
+            updateImageView2();
+        }
     }
 
     private void setMonochromatic(BufferedImage bufferedImageMono)
