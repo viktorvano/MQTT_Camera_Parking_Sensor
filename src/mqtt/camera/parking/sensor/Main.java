@@ -607,6 +607,16 @@ public class Main extends Application implements WebcamListener {
             }
             if (webcam.isOpen()) {
                 webcam.close();
+                int waitMs = 0;
+                while (webcam.isOpen() && waitMs < 2000) {
+                    try{
+                        Thread.sleep(50);
+                    }catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                    waitMs += 50;
+                }
             }
             comboBoxWebCams.getSelectionModel().select(webcam);
             if (webcam != null) {
@@ -653,6 +663,16 @@ public class Main extends Application implements WebcamListener {
             }
             if (webcam2.isOpen()) {
                 webcam2.close();
+                int waitMs = 0;
+                while (webcam2.isOpen() && waitMs < 2000) {
+                    try{
+                        Thread.sleep(50);
+                    }catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                    waitMs += 50;
+                }
             }
             comboBoxWebCams2.getSelectionModel().select(webcam2);
             if (webcam2 != null) {
