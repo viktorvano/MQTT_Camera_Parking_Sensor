@@ -1,4 +1,4 @@
-package mqtt.camera.parking.sensor;
+package mqtt.camera.parking.sensor.duo;
 
 import java.io.Serializable;
 

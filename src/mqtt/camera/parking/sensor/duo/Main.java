@@ -1,4 +1,4 @@
-package mqtt.camera.parking.sensor;
+package mqtt.camera.parking.sensor.duo;
 
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamEvent;
@@ -35,9 +35,9 @@ import java.io.ByteArrayOutputStream;
 import java.util.List;
 import javax.imageio.ImageIO;
 
-import static mqtt.camera.parking.sensor.AppParameters.*;
-import static mqtt.camera.parking.sensor.ParkingLotsFile.*;
-import static mqtt.camera.parking.sensor.StringFile.*;
+import static mqtt.camera.parking.sensor.duo.AppParameters.*;
+import static mqtt.camera.parking.sensor.duo.ParkingLotsFile.*;
+import static mqtt.camera.parking.sensor.duo.StringFile.*;
 
 public class Main extends Application implements WebcamListener {
     private Webcam webcam;
@@ -428,7 +428,7 @@ public class Main extends Application implements WebcamListener {
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.setTitle("MQTT Camera Parking Sensor - " + version);
-        primaryStage.getIcons().add(new Image("/mqtt/camera/parking/sensor/resources/icon.jpg"));
+        primaryStage.getIcons().add(new Image("/mqtt/camera/parking/sensor/duo/resources/icon.jpg"));
         primaryStage.show();
 
         timeline = new Timeline(new KeyFrame(Duration.millis(15000), event -> {

@@ -1,4 +1,4 @@
-package mqtt.camera.parking.sensor;
+package mqtt.camera.parking.sensor.duo;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

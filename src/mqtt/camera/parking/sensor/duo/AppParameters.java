@@ -1,4 +1,4 @@
-package mqtt.camera.parking.sensor;
+package mqtt.camera.parking.sensor.duo;
 
 public class AppParameters {
     public static final String version = "v20250629";
