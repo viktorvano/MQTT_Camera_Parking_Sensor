@@ -748,7 +748,7 @@ public class Main extends Application implements WebcamListener {
 
             publishMQTT();
         }
-        //System.gc();
+        System.gc();
     }
 
     private String encodeImageToBase64(BufferedImage image) {
@@ -759,9 +759,9 @@ public class Main extends Application implements WebcamListener {
             base64Image = Base64.getEncoder().encodeToString(imageBytes);
         } catch (Exception e) {
             e.printStackTrace();
-        }/*finally {
+        }finally {
             image.flush();
-        }*/
+        }
         return base64Image;
     }
 
@@ -820,14 +820,21 @@ public class Main extends Application implements WebcamListener {
             System.out.println("Parking B Message published");
 
             // Publish image as Base64
-            if (bufferedImage != null) {
+            if (bufferedImage != null && !webcam.isOpen())
+            {
                 String base64Image = encodeImageToBase64(bufferedImage);
                 String imageTopic = mqtt_image_topic;
                 MqttMessage imageMessage = new MqttMessage(base64Image.getBytes());
                 imageMessage.setQos(qos);
                 resolveMQTT();
                 mqttClient.publish(imageTopic, imageMessage);
-                System.out.println("Image message published");
+                System.out.println("Image B message published");
+            }else if(bufferedImage == null)
+            {
+                System.out.println("Image B is null...");
+            }else if(webcam.isOpen())
+            {
+                System.out.println("Cannot publish Image B, webcam is open.");
             }
 
             content = Integer.toString(parkingCount2); // Convert the integer value to string
@@ -838,14 +845,20 @@ public class Main extends Application implements WebcamListener {
             System.out.println("Parking C Message published");
 
             // Publish image as Base64
-            if (bufferedImage2 != null) {
+            if (bufferedImage2 != null && !webcam2.isOpen()) {
                 String base64Image = encodeImageToBase64(bufferedImage2);
                 String imageTopic = mqtt_image_topic2;
                 MqttMessage imageMessage = new MqttMessage(base64Image.getBytes());
                 imageMessage.setQos(qos);
                 resolveMQTT();
                 mqttClient.publish(imageTopic, imageMessage);
-                System.out.println("Image2 message published");
+                System.out.println("Image C message published");
+            }else if(bufferedImage2 == null)
+            {
+                System.out.println("Image C is null...");
+            }else if(webcam2.isOpen())
+            {
+                System.out.println("Cannot publish Image C, webcam2 is open.");
             }
         } catch (MqttException me) {
             System.out.println("Reason: " + me.getReasonCode());
@@ -866,6 +879,8 @@ public class Main extends Application implements WebcamListener {
                 e.printStackTrace();
             }
         }
+        System.out.println("Free memory: " + Runtime.getRuntime().freeMemory());
+        System.out.println("Total memory: " + Runtime.getRuntime().totalMemory());
     }
 
     private void toggleButtonAddParkingLot()
