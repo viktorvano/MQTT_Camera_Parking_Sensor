@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="MQTT_Camera_Parking_Sensor:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/MQTT_Camera_Parking_Sensor_jar</output-path>
+  <artifact type="jar" name="MQTT_Camera_Parking_Sensor_Duo:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/MQTT_Camera_Parking_Sensor_Duo_jar</output-path>
     <root id="archive" name="MQTT_Camera_Parking_Sensor.jar">
       <element id="module-output" name="MQTT_Camera_Parking_Sensor" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/eclipse/paho/org.eclipse.paho.client.mqttv3/1.2.5/org.eclipse.paho.client.mqttv3-1.2.5.jar" path-in-jar="/" />
