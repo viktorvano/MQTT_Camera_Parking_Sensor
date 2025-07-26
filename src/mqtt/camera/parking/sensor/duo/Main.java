@@ -126,6 +126,13 @@ public class Main extends Application implements WebcamListener {
             e.printStackTrace();
         }
 
+        try{
+            mqttUpdatePeriodInSeconds = Integer.parseInt(loadStringFromFile("res" + fileSeparator + "mqtt_update_period_in_seconds.txt", String.valueOf(mqttUpdatePeriodInSeconds)));
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
 
         List<Webcam> webcams = Webcam.getWebcams();
         comboBoxWebCams.getItems().addAll(webcams);
@@ -431,7 +438,7 @@ public class Main extends Application implements WebcamListener {
         primaryStage.getIcons().add(new Image("/mqtt/camera/parking/sensor/duo/resources/icon.jpg"));
         primaryStage.show();
 
-        timeline = new Timeline(new KeyFrame(Duration.millis(15000), event -> {
+        timeline = new Timeline(new KeyFrame(Duration.seconds(mqttUpdatePeriodInSeconds), event -> {
 
             cameraToggle = !cameraToggle;
             keepOneCameraOpen();
@@ -823,7 +830,7 @@ public class Main extends Application implements WebcamListener {
 
             // Publish image B
             synchronized (imageLock) {
-                if (bufferedImage != null && !webcam.isOpen())
+                if (bufferedImage != null)
                 {
                     String base64Image = encodeImageToBase64(bufferedImage);
                     MqttMessage imageMessage = new MqttMessage(base64Image.getBytes());
@@ -831,12 +838,9 @@ public class Main extends Application implements WebcamListener {
                     resolveMQTT();
                     mqttClient.publish(mqtt_image_topic, imageMessage);
                     System.out.println("Image B message published");
-                } else if (bufferedImage == null)
-                {
-                    System.out.println("Image B is null...");
                 } else
                 {
-                    System.out.println("Cannot publish Image B, webcam is open.");
+                    System.out.println("Image B is null...");
                 }
             }
 
@@ -849,7 +853,7 @@ public class Main extends Application implements WebcamListener {
 
             // Publish image C
             synchronized (imageLock2) {
-                if (bufferedImage2 != null && !webcam2.isOpen())
+                if (bufferedImage2 != null)
                 {
                     String base64Image = encodeImageToBase64(bufferedImage2);
                     MqttMessage imageMessage = new MqttMessage(base64Image.getBytes());
@@ -857,12 +861,9 @@ public class Main extends Application implements WebcamListener {
                     resolveMQTT();
                     mqttClient.publish(mqtt_image_topic2, imageMessage);
                     System.out.println("Image C message published");
-                } else if (bufferedImage2 == null)
-                {
-                    System.out.println("Image C is null...");
                 } else
                 {
-                    System.out.println("Cannot publish Image C, webcam2 is open.");
+                    System.out.println("Image C is null...");
                 }
             }
         } catch (MqttException me) {

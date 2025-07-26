@@ -1,7 +1,7 @@
 package mqtt.camera.parking.sensor.duo;
 
 public class AppParameters {
-    public static final String version = "v20250629";
+    public static final String version = "v20250726";
     public static final String fileSeparator = System.getProperty("file.separator");
     public static String brokerAddress = "tcp://192.168.1.25:1883"; // Full Broker URL + port
     public static String clientId = "Parking Camera Sensor";
@@ -14,6 +14,7 @@ public class AppParameters {
     public static int greyTolerance = 40;
     public static int blackThreshold = 60;
     public static int whiteThreshold = 250;
+    public static int mqttUpdatePeriodInSeconds = 15;
     public static final int paneWidth = 1300;
     public static final int paneHeight = 700;
     public static final int widthOffset2 = 650;
