@@ -907,8 +907,11 @@ public class Main extends Application implements WebcamListener {
             }
             keepOneCameraOpen();
             bufferedImage = webcam.getImage();
-            image = SwingFXUtils.toFXImage(bufferedImage, null);
-            imageView.setImage(image);
+            if(bufferedImage != null)
+            {
+                image = SwingFXUtils.toFXImage(bufferedImage, null);
+                imageView.setImage(image);
+            }
         }else
         {
             fixWebcamStream();
@@ -923,8 +926,11 @@ public class Main extends Application implements WebcamListener {
             }
             keepOneCameraOpen();
             bufferedImage2 = webcam2.getImage();
-            image2 = SwingFXUtils.toFXImage(bufferedImage2, null);
-            imageView2.setImage(image2);
+            if(bufferedImage2 != null)
+            {
+                image2 = SwingFXUtils.toFXImage(bufferedImage2, null);
+                imageView2.setImage(image2);
+            }
         }else
         {
             fixWebcamStream2();
