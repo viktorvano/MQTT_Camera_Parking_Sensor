@@ -25,7 +25,30 @@ public class ParkingLot implements Serializable {
         for(PixelPlace place : pixelPlaces)
         {
             // verify if all the pixels are grey within the tolerance
-            c = new Color(bufferedImage.getRGB(place.x, place.y));
+            try
+            {
+                c = new Color(bufferedImage.getRGB(place.x, place.y));
+            }catch (Exception e)
+            {
+                e.printStackTrace();
+                try
+                {
+                    System.out.println("Dividing XY coordinated by 2.");
+                    c = new Color(bufferedImage.getRGB(place.x/2, place.y/2));
+                }catch (Exception e)
+                {
+                    e.printStackTrace();
+                    try
+                    {
+                        System.out.println("Dividing XY coordinated by 4.");
+                        c = new Color(bufferedImage.getRGB(place.x/4, place.y/4));
+                    }catch (Exception e)
+                    {
+                        System.out.println("Setting color to BLACK.");
+                        c = new Color(0);
+                    }
+                }
+            }
             red = c.getRed();
             green = c.getGreen();
             blue = c.getBlue();
