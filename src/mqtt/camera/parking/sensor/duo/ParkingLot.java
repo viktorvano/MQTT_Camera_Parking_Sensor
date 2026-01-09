@@ -35,14 +35,14 @@ public class ParkingLot implements Serializable {
                 {
                     System.out.println("Dividing XY coordinated by 2.");
                     c = new Color(bufferedImage.getRGB(place.x/2, place.y/2));
-                }catch (Exception e)
+                }catch (Exception e2)
                 {
-                    e.printStackTrace();
+                    e2.printStackTrace();
                     try
                     {
                         System.out.println("Dividing XY coordinated by 4.");
                         c = new Color(bufferedImage.getRGB(place.x/4, place.y/4));
-                    }catch (Exception e)
+                    }catch (Exception e3)
                     {
                         System.out.println("Setting color to BLACK.");
                         c = new Color(0);
