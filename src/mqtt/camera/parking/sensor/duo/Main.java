@@ -216,6 +216,8 @@ public class Main extends Application implements WebcamListener {
         });
 
         imageView = new ImageView();
+        imageView.setFitWidth(640);
+        imageView.setFitHeight(480);
         imageView.setImage(image);
         imageView.setLayoutX(6);
         imageView.setLayoutY(6);
@@ -240,6 +242,8 @@ public class Main extends Application implements WebcamListener {
         });
 
         imageView2 = new ImageView();
+        imageView2.setFitWidth(640);
+        imageView2.setFitHeight(480);
         imageView2.setImage(image2);
         imageView2.setLayoutX(6 + widthOffset2);
         imageView2.setLayoutY(6);
